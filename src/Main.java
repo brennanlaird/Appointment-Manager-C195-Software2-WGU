@@ -5,6 +5,7 @@ import javafx.scene.Scene;
 import javafx.stage.Stage;
 import utilities.DBConnect;
 import utilities.DBQuery;
+import utilities.timeZone;
 
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -24,6 +25,9 @@ public class Main extends Application {
     public static void main(String[] args) throws SQLException, ClassNotFoundException {
         //Starts the connection to the mysql DB
         DBConnect.startConnection();
+
+
+
 
         //Inserting country data as a test.
         /*
