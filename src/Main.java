@@ -30,9 +30,9 @@ public class Main extends Application {
 
 
         //Inserting country data as a test.
-        /*
+/*
         //Create the statement object
-        DBQuery.setStatement(DBConnect.getConnection());
+        DBQuery.setPreparedStatement(DBConnect.getConnection(), );
 
         //Get the statement object
         Statement statement = DBQuery.getStatement();
@@ -40,7 +40,7 @@ public class Main extends Application {
         //SQL statement as a string
         String sql = "INSERT INTO countries(Country, Create_Date, Created_By, Last_Updated_By) VALUES('Wakanda', '2021-06-15 11:00:00', 'Tchaka', 'Tchalla')";
 
-        //Exectute the SQL statement
+        //Execute the SQL statement
         statement.execute(sql);
 
         if (statement.getUpdateCount()>0){
@@ -48,7 +48,7 @@ public class Main extends Application {
         } else {
             System.out.println("Nothing changed.");
         }
-        */
+*/
 
         launch(args);
 
