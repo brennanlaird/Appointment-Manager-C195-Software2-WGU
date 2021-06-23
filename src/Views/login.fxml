@@ -6,8 +6,8 @@
 
 <AnchorPane prefHeight="256.0" prefWidth="425.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.logincontroller">
    <children>
-      <TextField fx:id="usernameTextBox" layoutX="140.0" layoutY="83.0" prefHeight="25.0" prefWidth="211.0" />
-      <TextField fx:id="passTextBox" layoutX="140.0" layoutY="136.0" prefHeight="25.0" prefWidth="211.0" />
+      <TextField fx:id="usernameTextBox" layoutX="168.0" layoutY="83.0" prefHeight="25.0" prefWidth="211.0" />
+      <TextField fx:id="passTextBox" layoutX="169.0" layoutY="136.0" prefHeight="25.0" prefWidth="211.0" />
       <Label fx:id="usernameLabel" layoutX="69.0" layoutY="87.0" text="Username:" />
       <Label fx:id="passLabel" layoutX="69.0" layoutY="140.0" text="Password:" />
       <Button fx:id="loginButton" layoutX="200.0" layoutY="178.0" mnemonicParsing="false" onAction="#loginButtonClick" prefHeight="25.0" prefWidth="69.0" text="Login" />

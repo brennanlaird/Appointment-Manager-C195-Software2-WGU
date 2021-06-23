@@ -10,10 +10,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
-import utilities.DBConnect;
-import utilities.DBQuery;
-import utilities.displayMessages;
-import utilities.timeZone;
+import utilities.*;
 
 import java.io.IOException;
 import java.net.URL;
@@ -106,6 +103,10 @@ public class logincontroller implements Initializable {
         }
 
         if (loginSuccess) {
+            //If the login was successful, save the username for later use.
+            userInfo.saveUsername = userName;
+
+            //If login was successful, load the main screen
             Parent root = FXMLLoader.load(addCustomer.class.getResource("/views/homeScreen.fxml"));
             Stage stage = (Stage) ((Node) actionEvent.getSource()).getScene().getWindow();
             Scene scene = new Scene(root);
