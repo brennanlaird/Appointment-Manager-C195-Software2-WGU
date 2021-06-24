@@ -186,7 +186,7 @@ public class addCustomer implements Initializable {
         //Retrieve the values of all the text box values
 
         String customerName = customerNameBox.getText();
-        String customerAddress = addressTextBox.getText() + " | " + address2TextBox.getText();
+        String customerAddress = addressTextBox.getText() + "|" + address2TextBox.getText();
         String customerPhone = phoneTextBox.getText();
         String customerPostCode = postCodeTextBox.getText();
 
