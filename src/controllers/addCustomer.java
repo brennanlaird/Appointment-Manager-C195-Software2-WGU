@@ -49,9 +49,10 @@ public class addCustomer implements Initializable {
     public Label firstLevelTestLabel;
 
 
-
-    /**Sets up the country combobox by pulling all the available countries from the database and setting them to display
-     *  in the observable list associated with the combobox.*/
+    /**
+     * Sets up the country combobox by pulling all the available countries from the database and setting them to display
+     * in the observable list associated with the combobox.
+     */
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         //Sets the first level label to state by default
@@ -172,16 +173,16 @@ public class addCustomer implements Initializable {
         //countryCombo.getSelectionModel().clearSelection();
         //firstLevelCombo.getSelectionModel().clearSelection();
 
-          customerNameBox.setText("");
-          addressTextBox.setText("");
-          address2TextBox.setText("");
-          postCodeTextBox.setText("");
-          phoneTextBox.setText("");
+        customerNameBox.setText("");
+        addressTextBox.setText("");
+        address2TextBox.setText("");
+        postCodeTextBox.setText("");
+        phoneTextBox.setText("");
 
     }
 
     /***/
-    public void saveButtonClick(ActionEvent actionEvent) throws SQLException {
+    public void saveButtonClick(ActionEvent actionEvent) throws SQLException, IOException {
         //Retrieve the values of all the text box values
 
         String customerName = customerNameBox.getText();
@@ -208,6 +209,30 @@ public class addCustomer implements Initializable {
 
         String currentUser = userInfo.saveUsername;
 
+        String insertCustomerSQL = "INSERT INTO customers (Customer_Name, Address, Postal_Code, Phone, Created_By, Last_Updated_By, Division_ID) VALUES (?, ?, ?, ?, ?, ?, ?)";
+
+        DBQuery.setPreparedStatement(DBConnect.getConnection(), insertCustomerSQL); //Creating the prepared statement object
+        PreparedStatement prepState = DBQuery.getPreparedStatement(); //referencing the prepared statement
+
+        prepState.setString(1, customerName);
+        prepState.setString(2, customerAddress);
+        prepState.setString(3, customerPostCode);
+        prepState.setString(4, customerPhone);
+        prepState.setString(5, currentUser);
+        prepState.setString(6, currentUser);
+        prepState.setInt(7, divId);
+
+        prepState.execute(); //Runs the sql query
+        //ResultSet insertCustomerRS = prepState.getResultSet(); //Setting the results of the query to a result set
+        //divIDRS.next(); //Moves to the first result in the result set
+
+        //Return to the main screen after adding the customer
+        Parent root = FXMLLoader.load(addCustomer.class.getResource("/views/homeScreen.fxml"));
+        Stage stage = (Stage) ((Node) actionEvent.getSource()).getScene().getWindow();
+        Scene scene = new Scene(root);
+        stage.setTitle("DFC - Scheduler");
+        stage.setScene(scene);
+        stage.show();
 
     }
 }
