@@ -56,7 +56,8 @@ public class homeController implements Initializable {
                 String customerPhone = customerRS.getString("Phone");
                 String customerCreator = customerRS.getString("Created_By");
                 String customerUpdater = customerRS.getString("Last_Updated_By");
-                Customer temp = new Customer(customerID, customerName, customerAddress, customerPostCode, customerPhone, customerCreator, customerUpdater);
+                int customerDivID = customerRS.getInt("Division_ID");
+                Customer temp = new Customer(customerID, customerName, customerAddress, customerPostCode, customerPhone, customerCreator, customerUpdater, customerDivID);
                 allCustomers.add(temp);
             }
 
