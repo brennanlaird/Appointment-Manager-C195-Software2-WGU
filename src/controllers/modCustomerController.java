@@ -15,6 +15,7 @@ import javafx.stage.Stage;
 import objects.Customer;
 import utilities.DBConnect;
 import utilities.DBQuery;
+import utilities.userInfo;
 
 import java.io.IOException;
 import java.sql.PreparedStatement;
@@ -42,10 +43,14 @@ public class modCustomerController {
     public Label phoneLabel;
 
     public void receiveCustomer(Customer selectedItem) {
+        //Sets the text boxes to contain the information from the Customer object passed in from the main form.
         idTextBox.setText(String.valueOf(selectedItem.getId()));
         customerNameBox.setText(String.valueOf(selectedItem.getName()));
+        postCodeTextBox.setText(String.valueOf(selectedItem.getPostCode()));
+        phoneTextBox.setText(String.valueOf(selectedItem.getphone()));
 
-        if (selectedItem.getAddress().contains("|") ){
+        //If-else splits the address if the delimiter is found. This allows for two line addresses to be stored.
+        if (selectedItem.getAddress().contains("|")) {
 
             String[] addressSplit = selectedItem.getAddress().split("\\|");
 
@@ -54,9 +59,10 @@ public class modCustomerController {
         } else {
             addressTextBox.setText(selectedItem.getAddress());
         }
-        postCodeTextBox.setText(String.valueOf(selectedItem.getPostCode()));
-        phoneTextBox.setText(String.valueOf(selectedItem.getphone()));
 
+
+        //Sets the division ID passed from the main form to a temp variable.
+        int tempDiv = selectedItem.getdivisionID();
 
         //Sets the first level label to state by default
         firstLevelLabel.setText("State");
@@ -85,14 +91,51 @@ public class modCustomerController {
             countryCombo.setItems(countryList);
 
 
-
-
         } catch (Exception e) {
             System.out.println("There was a problem here.");
 
         }
 
 
+        //Getting the country by retrieving the country associated with the division ID
+
+        try {
+
+
+            String sql = "SELECT COUNTRY_ID, Division FROM first_level_divisions WHERE Division_ID = ?";
+            DBQuery.setPreparedStatement(DBConnect.getConnection(), sql); //Creating the prepared statement object
+            PreparedStatement ps = DBQuery.getPreparedStatement(); //referencing the prepared statement
+            ps.setString(1, String.valueOf(tempDiv)); //Getting the string representation of the id
+            ps.execute(); //Runs the sql query
+            ResultSet countryID_RS = ps.getResultSet(); //Setting the results of the query to a result set
+
+            countryID_RS.next();
+
+            int countryID = countryID_RS.getInt("COUNTRY_ID");
+
+            String divisionID = countryID_RS.getString("Division");
+
+
+            sql = "SELECT Country FROM countries WHERE Country_ID=?";
+
+            DBQuery.setPreparedStatement(DBConnect.getConnection(), sql); //Creating the prepared statement object
+            PreparedStatement ps1 = DBQuery.getPreparedStatement(); //referencing the prepared statement
+            ps1.setString(1, String.valueOf(countryID)); //Getting the string representation of the id
+            ps1.execute(); //Runs the sql query
+            ResultSet countryName_RS = ps1.getResultSet(); //Setting the results of the query to a result set
+
+
+            countryName_RS.next();
+
+            String countryName = countryName_RS.getString("COUNTRY");
+            //System.out.println(divisionID + ", " + countryName);
+
+            countryCombo.setValue(countryName);
+            firstLevelCombo.setValue(divisionID);
+
+        } catch (Exception e) {
+            System.out.println("There was a problem getting the country name.");
+        }
 
 
     }
@@ -170,15 +213,62 @@ public class modCustomerController {
         firstLevelCombo.setItems(firstLevelList);
 
 
-
     }
 
     public void clearFormButtonClick(ActionEvent actionEvent) {
     }
 
+    /**Updates the record in the database with the changes made by the user and returns to the main screen.*/
     public void saveButtonClick(ActionEvent actionEvent) throws IOException {
+        try {
+            //Retrieve the values of all the text box values
+            int customerID = Integer.parseInt(idTextBox.getText());
+            String customerName = customerNameBox.getText();
+            String customerAddress = addressTextBox.getText() + "|" + address2TextBox.getText();
+            String customerPhone = phoneTextBox.getText();
+            String customerPostCode = postCodeTextBox.getText();
+
+            //Get the division ID of the selected first level division
+
+            //Put the selected string form the combo into a variable
+            String divSelected = (String) firstLevelCombo.getSelectionModel().getSelectedItem();
+
+            //Create a query based on the string variable to get the country ID
+            String sql = "SELECT Division_ID FROM first_level_divisions WHERE Division = ?";
+            DBQuery.setPreparedStatement(DBConnect.getConnection(), sql); //Creating the prepared statement object
+            PreparedStatement ps = DBQuery.getPreparedStatement(); //referencing the prepared statement
+            ps.setString(1, divSelected);
+            ps.executeQuery(); //Runs the sql query
+            ResultSet divIDRS = ps.getResultSet(); //Setting the results of the query to a result set
+            divIDRS.next(); //Moves to the first result in the result set
+
+            //Assigns the country ID to an integer variable
+            int divId = divIDRS.getInt("Division_ID");
+
+            String currentUser = userInfo.saveUsername;
+
+            String insertCustomerSQL = "UPDATE customers  " +
+                    "SET Customer_Name = ?, Address = ?, Postal_Code = ?, Phone = ?,  Last_Updated_By = ?, Division_ID = ? " +
+                    "WHERE Customer_ID = ?";
+
+            DBQuery.setPreparedStatement(DBConnect.getConnection(), insertCustomerSQL); //Creating the prepared statement object
+            PreparedStatement prepState = DBQuery.getPreparedStatement(); //referencing the prepared statement
+
+            prepState.setString(1, customerName);
+            prepState.setString(2, customerAddress);
+            prepState.setString(3, customerPostCode);
+            prepState.setString(4, customerPhone);
+            prepState.setString(5, currentUser);
+            prepState.setInt(6, divId);
+            prepState.setInt(7, customerID);
 
 
+
+
+            prepState.executeUpdate(); //Runs the sql query
+        } catch (Exception e) {
+            System.out.println("There was an error updating the record.");
+        }
 
 
         Parent root = FXMLLoader.load(addCustomer.class.getResource("/views/homeScreen.fxml"));

@@ -8,9 +8,7 @@ import javafx.fxml.Initializable;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
+import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.stage.Stage;
 import objects.Customer;
@@ -22,6 +20,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ResourceBundle;
 
 public class homeController implements Initializable {
@@ -34,11 +33,15 @@ public class homeController implements Initializable {
     public Button updateCustomerButton;
     public Button deleteCustomerButton;
 
+
+    ObservableList<Customer> allCustomers = FXCollections.observableArrayList();
+
+
     @Override
     /***/
     public void initialize(URL url, ResourceBundle resourceBundle) {
 
-        ObservableList<Customer> allCustomers = FXCollections.observableArrayList();
+
 
         try {
             //Create a query based on the string variable to get the country ID
@@ -85,7 +88,43 @@ public class homeController implements Initializable {
         stage.show();
     }
     /**Deletes the customer selected from the table after user confirmation and then adjusts the list of customers to display.*/
-    public void deleteCustomerButtonClick(ActionEvent actionEvent) throws IOException {
+    public void deleteCustomerButtonClick(ActionEvent actionEvent) throws IOException, SQLException {
+        //Check for any active appointments first.
+
+
+       Customer deleteCheck = (Customer) customerTable.getSelectionModel().getSelectedItem();
+
+       if(deleteCheck == null) {
+
+           displayMessages.errorMsg("No customer was selected. Please select one to delete.");
+
+       } else {
+           //Sets a dialog to ensure the user wants to delete
+           var deleteConfirm = new Alert(Alert.AlertType.CONFIRMATION, "", ButtonType.YES, ButtonType.NO, ButtonType.CANCEL);
+           deleteConfirm.setTitle("Confirm Delete");
+           deleteConfirm.setContentText("Are you sure you want to delete the selected item?");
+           deleteConfirm.showAndWait();
+           //If the user presses yes, the part is deleted from the part table
+           if (deleteConfirm.getResult() == ButtonType.YES) {
+
+               //Run a delete query
+
+               String sql = "DELETE FROM customers WHERE Customer_ID = ?";
+               DBQuery.setPreparedStatement(DBConnect.getConnection(), sql); //Creating the prepared statement object
+               PreparedStatement ps = DBQuery.getPreparedStatement(); //referencing the prepared statement
+               ps.setString(1, String.valueOf(deleteCheck.getId())); //Getting the string representation of the id
+               ps.executeUpdate(); //Runs the sql query
+               //ResultSet countryID_RS = ps.getResultSet(); //Setting the results of the query to a result set
+
+               //Update the table view
+               allCustomers.remove(deleteCheck);
+
+               //Show a dialog that the delete was successful.
+
+           }
+       }
+
+
 
 
     }
@@ -99,7 +138,7 @@ public class homeController implements Initializable {
 
     public void updateCustomerButtonClick(ActionEvent actionEvent) {
         //The try-catch block is used to avoid a null pointed error if the button is pushed with nothing selected.
-        System.out.println("Debug me!");
+
         try {
             //Initializes the Modify Part controller
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/Views/modCustomer.fxml"));
