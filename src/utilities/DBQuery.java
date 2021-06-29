@@ -2,6 +2,7 @@ package utilities;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 
 
@@ -9,6 +10,7 @@ import java.sql.SQLException;
 public class DBQuery {
 
     private static PreparedStatement statement;
+
 
     //Creates the statement object from the database connection passed in.
     public static void setPreparedStatement (Connection dbConnection, String sql) throws SQLException {
@@ -19,4 +21,7 @@ public class DBQuery {
     public static PreparedStatement getPreparedStatement(){
         return statement;
     }
+
+
+
 }

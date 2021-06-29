@@ -15,6 +15,7 @@ import javafx.stage.Stage;
 import objects.Customer;
 import utilities.DBConnect;
 import utilities.DBQuery;
+import utilities.returnHome;
 import utilities.userInfo;
 
 import java.io.IOException;
@@ -271,12 +272,7 @@ public class modCustomerController {
         }
 
 
-        Parent root = FXMLLoader.load(addCustomer.class.getResource("/views/homeScreen.fxml"));
-        Stage stage = (Stage) ((Node) actionEvent.getSource()).getScene().getWindow();
-        Scene scene = new Scene(root);
-        stage.setTitle("DFC - Scheduler");
-        stage.setScene(scene);
-        stage.show();
+        returnHome.loadHome(actionEvent);
     }
 
 }

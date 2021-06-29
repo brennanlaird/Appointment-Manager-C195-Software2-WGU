@@ -11,16 +11,22 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.stage.Stage;
+import objects.Appointment;
 import objects.Customer;
 import utilities.DBConnect;
 import utilities.DBQuery;
 import utilities.displayMessages;
+import utilities.timeZone;
 
 import java.io.IOException;
 import java.net.URL;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ResourceBundle;
 
 public class homeController implements Initializable {
@@ -33,8 +39,20 @@ public class homeController implements Initializable {
     public Button updateCustomerButton;
     public Button deleteCustomerButton;
 
+    public TableView apptTable;
+    public TableColumn apptIDCol;
+    public TableColumn apptTitleCol;
+    public TableColumn apptDescriptionCol;
+    public TableColumn apptLocationCol;
+    public TableColumn apptContactCol;
+    public TableColumn apptTypeCol;
+    public TableColumn apptStartCol;
+    public TableColumn apptEndCol;
+    public TableColumn apptCustomerIDCol;
+
 
     ObservableList<Customer> allCustomers = FXCollections.observableArrayList();
+    ObservableList<Appointment> allAppointments = FXCollections.observableArrayList();
 
 
     @Override
@@ -65,14 +83,86 @@ public class homeController implements Initializable {
             }
 
         } catch (Exception SQLException) {
-            System.out.println("Database Error");
+            System.out.println("Database Error from the customers.");
         }
 
-        //divIDRS.next(); //Moves to the first result in the result set
+
+        try{
+            //Create a query to get all the appointments from the DB
+            String sql = "SELECT * FROM appointments";
+            DBQuery.setPreparedStatement(DBConnect.getConnection(), sql); //Creating the prepared statement object
+            PreparedStatement ps = DBQuery.getPreparedStatement(); //referencing the prepared statement
+            ps.executeQuery(); //Runs the sql query
+            ResultSet appointmentRS = ps.getResultSet(); //Setting the results of the query to a result set
+
+            while(appointmentRS.next()){
+                int apptID = appointmentRS.getInt("Appointment_ID");
+                String apptTitle = appointmentRS.getString("Title");
+                String apptDescription = appointmentRS.getString("Description");
+                String apptLocation = appointmentRS.getString("Location");
+                String apptType = appointmentRS.getString("Type");
+
+
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
+                LocalDateTime startTime = LocalDateTime.parse(appointmentRS.getString("Start"), formatter);
+                ZonedDateTime apptStart = ZonedDateTime.of(startTime, ZoneId.of("UTC"));
+
+                LocalDateTime endTime = LocalDateTime.parse(appointmentRS.getString("End"), formatter);
+                ZonedDateTime apptEnd = ZonedDateTime.of(endTime, ZoneId.of("UTC"));
+
+
+                ZoneId tz = ZoneId.of(timeZone.timeZoneName());
+
+                ZonedDateTime apptEndlocal = ZonedDateTime.ofInstant(apptEnd.toInstant(),tz);
+
+
+                System.out.println(tz);
+                System.out.println(apptEnd);
+
+                //apptEnd.ofInstant(apptEnd.toInstant(),tz);
+
+                System.out.println("After conversion: " + apptEndlocal);
+
+                String apptCreator = appointmentRS.getString("Created_By");
+                String apptUpdater = appointmentRS.getString("Last_Updated_By");
+                int apptCustomerID = appointmentRS.getInt("Customer_ID");
+                int apptUserID = appointmentRS.getInt("User_ID");
+                int apptContactID = appointmentRS.getInt("Contact_ID");
+
+                Appointment temp = new Appointment(apptID, apptTitle, apptDescription, apptLocation, apptType, apptStart,
+                        apptEnd, apptCreator, apptUpdater, apptCustomerID, apptUserID, apptContactID);
+                allAppointments.add(temp);
+
+
+            }
+
+
+
+        } catch (Exception SQLException){
+            System.out.println("Database Error from the appointments.");
+        }
+
+
         customerTable.setItems(allCustomers);
 
         customerIDCol.setCellValueFactory(new PropertyValueFactory<>("id"));
         customerNameCol.setCellValueFactory(new PropertyValueFactory<>("name"));
+
+
+        apptTable.setItems(allAppointments);
+
+        apptIDCol.setCellValueFactory(new PropertyValueFactory<>("id"));
+        apptTitleCol.setCellValueFactory(new PropertyValueFactory<>("title"));
+        apptDescriptionCol.setCellValueFactory(new PropertyValueFactory<>("description"));
+        apptLocationCol.setCellValueFactory(new PropertyValueFactory<>("location"));
+        //apptContactCol.setCellValueFactory(new PropertyValueFactory<>("contact"));
+        apptTypeCol.setCellValueFactory(new PropertyValueFactory<>("type"));
+        apptStartCol.setCellValueFactory(new PropertyValueFactory<>("startTime"));
+        apptEndCol.setCellValueFactory(new PropertyValueFactory<>("endTime"));
+        apptCustomerIDCol.setCellValueFactory(new PropertyValueFactory<>("customerID"));
+
+
     }
 
 

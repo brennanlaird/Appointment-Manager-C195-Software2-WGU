@@ -15,6 +15,7 @@ import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 import utilities.DBConnect;
 import utilities.DBQuery;
+import utilities.returnHome;
 import utilities.userInfo;
 
 import java.io.IOException;
@@ -94,12 +95,7 @@ public class addCustomer implements Initializable {
      * Returns to the main form without saving any of the user input.
      */
     public void cancelButtonClick(ActionEvent actionEvent) throws IOException {
-        Parent root = FXMLLoader.load(addCustomer.class.getResource("/views/homeScreen.fxml"));
-        Stage stage = (Stage) ((Node) actionEvent.getSource()).getScene().getWindow();
-        Scene scene = new Scene(root);
-        stage.setTitle("DFC - Scheduler");
-        stage.setScene(scene);
-        stage.show();
+        returnHome.loadHome(actionEvent);
     }
 
     /**
@@ -227,12 +223,7 @@ public class addCustomer implements Initializable {
         //divIDRS.next(); //Moves to the first result in the result set
 
         //Return to the main screen after adding the customer
-        Parent root = FXMLLoader.load(addCustomer.class.getResource("/views/homeScreen.fxml"));
-        Stage stage = (Stage) ((Node) actionEvent.getSource()).getScene().getWindow();
-        Scene scene = new Scene(root);
-        stage.setTitle("DFC - Scheduler");
-        stage.setScene(scene);
-        stage.show();
+        returnHome.loadHome(actionEvent);
 
     }
 }
