@@ -196,7 +196,7 @@ public class addAppointment implements Initializable {
         ZonedDateTime utcStart = localStartTime.withZoneSameInstant(ZoneId.of("UTC"));
         ZonedDateTime utcEnd = localEndTime.withZoneSameInstant(ZoneId.of("UTC"));
 
-        //System.out.println("FIND THIS " + localStartTime);
+        System.out.println("Local " + localStartTime + " UTC " + utcStart);
 
 
 
