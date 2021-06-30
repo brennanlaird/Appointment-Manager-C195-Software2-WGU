@@ -29,5 +29,6 @@
             <TableColumn fx:id="apptCustomerIDCol" prefWidth="77.0" text="Customer ID" />
         </columns>
       </TableView>
+      <Button fx:id="addAppointmentButton" layoutX="717.0" layoutY="99.0" mnemonicParsing="false" onAction="#addAppointmentButtonClick" text="Add Appointment" />
    </children>
 </AnchorPane>

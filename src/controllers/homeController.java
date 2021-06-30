@@ -49,6 +49,7 @@ public class homeController implements Initializable {
     public TableColumn apptStartCol;
     public TableColumn apptEndCol;
     public TableColumn apptCustomerIDCol;
+    public Button addAppointmentButton;
 
 
     ObservableList<Customer> allCustomers = FXCollections.observableArrayList();
@@ -250,5 +251,15 @@ public class homeController implements Initializable {
             displayMessages.errorMsg("No customer was selected. Please select one to modify.");
         }
 
+    }
+
+    /**Loads the add appointment for when the add appointment button has been clicked.*/
+    public void addAppointmentButtonClick(ActionEvent actionEvent) throws IOException {
+        Parent root = FXMLLoader.load(addCustomer.class.getResource("/views/addAppointment.fxml"));
+        Stage stage = (Stage) ((Node) actionEvent.getSource()).getScene().getWindow();
+        Scene scene = new Scene(root);
+        stage.setTitle("DFC - Add Appointment");
+        stage.setScene(scene);
+        stage.show();
     }
 }

@@ -26,7 +26,15 @@
                   <Label prefWidth="150.0" text="Appointment Description" />
                   <TextField fx:id="descriptionTextBox" />
                </children>
+               <VBox.margin>
+                  <Insets />
+               </VBox.margin>
             </HBox>
+            <HBox prefHeight="40.0" prefWidth="150.0">
+               <children>
+                  <Label prefWidth="150.0" text="Appointment Type" />
+                  <TextField fx:id="typeTextBox" />
+               </children></HBox>
             <HBox prefHeight="40.0" prefWidth="200.0">
                <children>
                   <Label prefWidth="150.0" text="Location" />
@@ -36,51 +44,31 @@
             <HBox fx:id="datePick" prefHeight="40.0" prefWidth="200.0">
                <children>
                   <Label prefWidth="150.0" text="Date" />
-                  <DatePicker />
+                  <DatePicker fx:id="datePicker" />
                </children>
             </HBox>
             <HBox prefHeight="40.0" prefWidth="200.0">
                <children>
                   <Label prefWidth="150.0" text="Start Time" />
-                  <Spinner prefHeight="25.0" prefWidth="56.0" />
-                  <Label text="hr">
-                     <HBox.margin>
-                        <Insets right="10.0" top="5.0" />
-                     </HBox.margin>
-                  </Label>
-                  <Spinner prefHeight="25.0" prefWidth="74.0" />
-                  <Label text="min">
-                     <HBox.margin>
-                        <Insets top="5.0" />
-                     </HBox.margin></Label>
+                  <ComboBox fx:id="startTimeCombo" prefWidth="150.0" />
                </children>
             </HBox>
             <HBox prefHeight="40.0" prefWidth="200.0">
                <children>
                   <Label prefWidth="150.0" text="End Time" />
-                  <Spinner prefHeight="25.0" prefWidth="55.0" />
-                  <Label text="hr">
-                     <HBox.margin>
-                        <Insets right="10.0" top="5.0" />
-                     </HBox.margin>
-                  </Label>
-                  <Spinner prefHeight="25.0" prefWidth="77.0" />
-                  <Label text="min">
-                     <HBox.margin>
-                        <Insets top="5.0" />
-                     </HBox.margin></Label>
+                  <ComboBox fx:id="endTimeCombo" prefWidth="150.0" />
                </children>
             </HBox>
             <HBox prefHeight="40.0" prefWidth="200.0">
                <children>
                   <Label prefWidth="150.0" text="Customer" />
-                  <ComboBox prefWidth="150.0" />
+                  <ComboBox fx:id="customerCombo" prefWidth="150.0" />
                </children>
             </HBox>
             <HBox prefHeight="40.0" prefWidth="200.0">
                <children>
                   <Label prefWidth="150.0" text="Contact" />
-                  <ComboBox prefWidth="150.0" />
+                  <ComboBox fx:id="contactCombo" prefWidth="150.0" />
                </children>
             </HBox>
          </children>
@@ -106,5 +94,6 @@
       </Label>
       <Label layoutX="27.0" layoutY="516.0" text="Current Time Zone:" />
       <Label fx:id="tzLabel" layoutX="137.0" layoutY="516.0" text="Show current time zone" />
+      <HBox prefHeight="100.0" prefWidth="200.0" />
    </children>
 </AnchorPane>
