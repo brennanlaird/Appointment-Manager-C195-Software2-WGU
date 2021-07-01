@@ -2,6 +2,7 @@ package controllers;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.collections.transformation.FilteredList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
@@ -13,20 +14,16 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.stage.Stage;
 import objects.Appointment;
 import objects.Customer;
-import utilities.DBConnect;
-import utilities.DBQuery;
-import utilities.displayMessages;
-import utilities.timeZone;
+import utilities.*;
 
 import java.io.IOException;
 import java.net.URL;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.ResourceBundle;
 
 public class homeController implements Initializable {
@@ -34,6 +31,9 @@ public class homeController implements Initializable {
     public TableView customerTable;
     public TableColumn customerIDCol;
     public TableColumn customerNameCol;
+    public TableColumn customerCountryCol;
+    public TableColumn customerRegionCol;
+
 
     public Button addCustomerButton;
     public Button updateCustomerButton;
@@ -53,6 +53,12 @@ public class homeController implements Initializable {
     public Button addAppointmentButton;
     public Button updateAppointmentButton;
     public Button deleteAppointment;
+    public Button exitButton;
+
+    public RadioButton viewAllRadio;
+    public RadioButton viewWeekRadio;
+    public RadioButton viewMonthRadio;
+    public ToggleGroup apptFilter;
 
 
     ObservableList<Customer> allCustomers = FXCollections.observableArrayList();
@@ -81,8 +87,15 @@ public class homeController implements Initializable {
                 String customerCreator = customerRS.getString("Created_By");
                 String customerUpdater = customerRS.getString("Last_Updated_By");
                 int customerDivID = customerRS.getInt("Division_ID");
-                Customer temp = new Customer(customerID, customerName, customerAddress, customerPostCode, customerPhone, customerCreator, customerUpdater, customerDivID);
+                String customerDiv = convertID.convertDivision(customerDivID);
+                String customerCountry = convertID.convertCountry(customerDivID);
+                Customer temp = new Customer(customerID, customerName, customerAddress, customerPostCode, customerPhone, customerCreator, customerUpdater, customerDivID, customerDiv, customerCountry);
                 allCustomers.add(temp);
+
+                //System.out.print("Customer Country: " + convertID.convertCountry(temp.getdivisionID()) + "  ");
+                //System.out.println("Customer Region: " + convertID.convertDivision(temp.getdivisionID()));
+
+
             }
 
         } catch (Exception SQLException) {
@@ -133,8 +146,10 @@ public class homeController implements Initializable {
                 int apptUserID = appointmentRS.getInt("User_ID");
                 int apptContactID = appointmentRS.getInt("Contact_ID");
 
+                String apptContact = convertID.convertContact(apptContactID);
+
                 Appointment temp = new Appointment(apptID, apptTitle, apptDescription, apptLocation, apptType, apptStart,
-                        apptEnd, apptCreator, apptUpdater, apptCustomerID, apptUserID, apptContactID);
+                        apptEnd, apptCreator, apptUpdater, apptCustomerID, apptUserID, apptContactID, apptContact);
                 allAppointments.add(temp);
 
 
@@ -150,7 +165,8 @@ public class homeController implements Initializable {
 
         customerIDCol.setCellValueFactory(new PropertyValueFactory<>("id"));
         customerNameCol.setCellValueFactory(new PropertyValueFactory<>("name"));
-
+        customerCountryCol.setCellValueFactory(new PropertyValueFactory<>("country"));
+        customerRegionCol.setCellValueFactory(new PropertyValueFactory<>("division"));
 
         apptTable.setItems(allAppointments);
 
@@ -158,7 +174,7 @@ public class homeController implements Initializable {
         apptTitleCol.setCellValueFactory(new PropertyValueFactory<>("title"));
         apptDescriptionCol.setCellValueFactory(new PropertyValueFactory<>("description"));
         apptLocationCol.setCellValueFactory(new PropertyValueFactory<>("location"));
-        //apptContactCol.setCellValueFactory(new PropertyValueFactory<>("contact"));
+        apptContactCol.setCellValueFactory(new PropertyValueFactory<>("contact"));
         apptTypeCol.setCellValueFactory(new PropertyValueFactory<>("type"));
         apptStartCol.setCellValueFactory(new PropertyValueFactory<>("startTime"));
         apptEndCol.setCellValueFactory(new PropertyValueFactory<>("endTime"));
@@ -184,41 +200,54 @@ public class homeController implements Initializable {
      * Deletes the customer selected from the table after user confirmation and then adjusts the list of customers to display.
      */
     public void deleteCustomerButtonClick(ActionEvent actionEvent) throws IOException, SQLException {
-        //Check for any active appointments first.
-
 
         Customer deleteCheck = (Customer) customerTable.getSelectionModel().getSelectedItem();
 
-        if (deleteCheck == null) {
 
-            displayMessages.errorMsg("No customer was selected. Please select one to delete.");
+        String sql = "SELECT * FROM appointments WHERE Customer_ID = ?";
+        DBQuery.setPreparedStatement(DBConnect.getConnection(), sql); //Creating the prepared statement object
+        PreparedStatement ps = DBQuery.getPreparedStatement(); //referencing the prepared statement
+        ps.setString(1, String.valueOf(deleteCheck.getId())); //Getting the string representation of the id
+        ps.execute(); //Runs the sql query
+        ResultSet customerID_RS = ps.getResultSet();
+
+        if (customerID_RS.next() == true) {
+            displayMessages.errorMsg("This customer has active appointments. Please delete those prior to deleting the customer.");
 
         } else {
-            //Sets a dialog to ensure the user wants to delete
-            var deleteConfirm = new Alert(Alert.AlertType.CONFIRMATION, "", ButtonType.YES, ButtonType.NO, ButtonType.CANCEL);
-            deleteConfirm.setTitle("Confirm Delete");
-            deleteConfirm.setContentText("Are you sure you want to delete the selected item?");
-            deleteConfirm.showAndWait();
-            //If the user presses yes, the part is deleted from the part table
-            if (deleteConfirm.getResult() == ButtonType.YES) {
 
-                //Run a delete query
 
-                String sql = "DELETE FROM customers WHERE Customer_ID = ?";
-                DBQuery.setPreparedStatement(DBConnect.getConnection(), sql); //Creating the prepared statement object
-                PreparedStatement ps = DBQuery.getPreparedStatement(); //referencing the prepared statement
-                ps.setString(1, String.valueOf(deleteCheck.getId())); //Getting the string representation of the id
-                ps.executeUpdate(); //Runs the sql query
-                //ResultSet countryID_RS = ps.getResultSet(); //Setting the results of the query to a result set
+            if (deleteCheck == null) {
 
-                //Update the table view
-                allCustomers.remove(deleteCheck);
+                displayMessages.errorMsg("No customer was selected. Please select one to delete.");
 
-                //Show a dialog that the delete was successful.
+            } else {
+                //Sets a dialog to ensure the user wants to delete
+                var deleteConfirm = new Alert(Alert.AlertType.CONFIRMATION, "", ButtonType.YES, ButtonType.NO, ButtonType.CANCEL);
+                deleteConfirm.setTitle("Confirm Delete");
+                deleteConfirm.setContentText("Are you sure you want to delete the selected item?");
+                deleteConfirm.showAndWait();
+                //If the user presses yes, the customer is deleted from the customer table
+                if (deleteConfirm.getResult() == ButtonType.YES) {
 
+                    //Run a delete query
+
+                    sql = "DELETE FROM customers WHERE Customer_ID = ?";
+                    DBQuery.setPreparedStatement(DBConnect.getConnection(), sql); //Creating the prepared statement object
+                    PreparedStatement ps1 = DBQuery.getPreparedStatement(); //referencing the prepared statement
+                    ps1.setString(1, String.valueOf(deleteCheck.getId())); //Getting the string representation of the id
+                    ps1.executeUpdate(); //Runs the sql query
+
+
+                    //Update the table view
+                    allCustomers.remove(deleteCheck);
+
+                    //Show a dialog that the delete was successful.
+                    displayMessages.infoMsg("Customer record deleted successfully.");
+
+                }
             }
         }
-
 
     }
 
@@ -330,6 +359,27 @@ public class homeController implements Initializable {
                 allAppointments.remove(deleteCheck);
             }
             //Show a dialog that the delete was successful.
+            displayMessages.apptCanceled(deleteCheck.getId());
         }
+    }
+
+
+    public void viewAllRadioClick(ActionEvent actionEvent) {
+        apptTable.setItems(allAppointments);
+    }
+
+    public void viewWeekRadioClick(ActionEvent actionEvent) {
+        LocalDate rightNow = LocalDate.now();
+        LocalDate oneWeek = LocalDate.now().plus(7, ChronoUnit.DAYS);
+        FilteredList<Appointment> weeklyAppt = new FilteredList<>(allAppointments, i -> (i.getEndTime().toLocalDate().compareTo(oneWeek)) < 0 && (rightNow.compareTo(i.getEndTime().toLocalDate()) < 0));
+        apptTable.setItems(weeklyAppt);
+
+    }
+
+    public void viewMonthRadioClick(ActionEvent actionEvent) {
+        LocalDate rightNow = LocalDate.now();
+        LocalDate oneMonth = LocalDate.now().plus(31, ChronoUnit.DAYS);
+        FilteredList<Appointment> monthlyAppt = new FilteredList<>(allAppointments, i -> (i.getEndTime().toLocalDate().compareTo(oneMonth)) < 0 && (rightNow.compareTo(i.getEndTime().toLocalDate()) < 0));
+        apptTable.setItems(monthlyAppt);
     }
 }

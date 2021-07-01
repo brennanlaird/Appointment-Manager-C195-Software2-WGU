@@ -9,10 +9,14 @@ public class Customer {
     private String createBy;
     private String lastUpdateBy;
     private int divisionID;
+    private String division;
+    private String country;
+
+
 
 
     //Constructor for the customer class
-    public Customer(int id, String name, String address, String postCode, String phone, String createBy, String lastUpdateBy, int divisionID) {
+    public Customer(int id, String name, String address, String postCode, String phone, String createBy, String lastUpdateBy, int divisionID, String division, String country) {
         this.id = id;
         this.name = name;
         this.address = address;
@@ -21,6 +25,8 @@ public class Customer {
         this.createBy = createBy;
         this.lastUpdateBy = lastUpdateBy;
         this.divisionID = divisionID;
+        this.division = division;
+        this.country = country;
     }
 
     /**
@@ -135,4 +141,22 @@ public class Customer {
     public void setdivisionID(int divisionID) {
         this.divisionID = divisionID;
     }
+
+    public String getDivision() {
+        return division;
+    }
+
+    public void setDivision(String division) {
+        this.division = division;
+    }
+
+    public String getCountry() {
+        return country;
+    }
+
+    public void setCountry(String country) {
+        this.country = country;
+    }
 }
+
+

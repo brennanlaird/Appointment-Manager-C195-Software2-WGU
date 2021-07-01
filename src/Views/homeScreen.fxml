@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.geometry.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
@@ -7,11 +8,12 @@
    <children>
       <Button fx:id="addCustomerButton" layoutX="474.0" layoutY="99.0" mnemonicParsing="false" onAction="#addCustomerButtonClick" prefHeight="25.0" prefWidth="115.0" text="Add Customer" />
       <Button fx:id="exitButton" layoutX="876.0" layoutY="652.0" mnemonicParsing="false" onAction="#exitButtonClick" prefHeight="33.0" prefWidth="93.0" text="Exit" />
-      <TableView fx:id="customerTable" layoutX="39.0" layoutY="50.0" prefHeight="256.0" prefWidth="363.0">
+      <TableView fx:id="customerTable" layoutX="39.0" layoutY="50.0" prefHeight="256.0" prefWidth="430.0">
         <columns>
           <TableColumn fx:id="customerIDCol" prefWidth="88.0" text="Customer ID" />
           <TableColumn fx:id="customerNameCol" prefWidth="139.0" text="Customer Name" />
-            <TableColumn prefWidth="135.0" text="Column X" />
+            <TableColumn fx:id="customerCountryCol" prefWidth="84.0" text="Country" />
+            <TableColumn fx:id="customerRegionCol" prefWidth="118.0" text="Region" />
         </columns>
       </TableView>
       <Button fx:id="updateCustomerButton" layoutX="474.0" layoutY="153.0" mnemonicParsing="false" onAction="#updateCustomerButtonClick" prefHeight="25.0" prefWidth="115.0" text="Update Customer" />
@@ -32,5 +34,23 @@
       <Button fx:id="addAppointmentButton" layoutX="717.0" layoutY="99.0" mnemonicParsing="false" onAction="#addAppointmentButtonClick" text="Add Appointment" />
       <Button fx:id="updateAppointmentButton" layoutX="717.0" layoutY="153.0" mnemonicParsing="false" onAction="#updateAppointmentButtonClick" text="Update Appointment" />
       <Button fx:id="deleteAppointment" layoutX="717.0" layoutY="202.0" mnemonicParsing="false" onAction="#deleteAppointmentClick" text="Delete Appointment" />
+      <HBox layoutX="287.0" layoutY="317.0" prefHeight="33.0" prefWidth="430.0">
+         <children>
+            <RadioButton fx:id="viewAllRadio" mnemonicParsing="false" onAction="#viewAllRadioClick" selected="true" text="Show All">
+               <HBox.margin>
+                  <Insets right="25.0" />
+               </HBox.margin>
+               <toggleGroup>
+                  <ToggleGroup fx:id="apptFilter" />
+               </toggleGroup>
+            </RadioButton>
+            <RadioButton fx:id="viewWeekRadio" mnemonicParsing="false" onAction="#viewWeekRadioClick" text="Show Upcoming Week" toggleGroup="$apptFilter">
+               <HBox.margin>
+                  <Insets right="25.0" />
+               </HBox.margin>
+            </RadioButton>
+            <RadioButton fx:id="viewMonthRadio" mnemonicParsing="false" onAction="#viewMonthRadioClick" text="Show Upcoming Month" toggleGroup="$apptFilter" />
+         </children>
+      </HBox>
    </children>
 </AnchorPane>

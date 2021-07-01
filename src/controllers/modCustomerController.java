@@ -134,6 +134,9 @@ public class modCustomerController {
             countryCombo.setValue(countryName);
             firstLevelCombo.setValue(divisionID);
 
+            firstLevelCombo.setDisable(false);
+            firstLevelLabel.setDisable(false);
+
         } catch (Exception e) {
             System.out.println("There was a problem getting the country name.");
         }
@@ -212,6 +215,10 @@ public class modCustomerController {
         }
         //Sets the combo box to display the items in the observable list
         firstLevelCombo.setItems(firstLevelList);
+
+
+        //Sets the combo box to blank. This prevents the user from changing only the country and leaving the first level division value
+        firstLevelCombo.setValue("");
 
 
     }

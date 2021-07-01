@@ -14,4 +14,16 @@ public class displayMessages {
         alert.setContentText(msg);
         alert.showAndWait();
     }
+
+    public static void infoMsg(String msg) {
+        var alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setContentText(msg);
+        alert.showAndWait();
+    }
+
+    public static void apptCanceled(int id){
+        var alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setContentText("Appointment ID " + id + " has been cancelled.");
+        alert.showAndWait();
+    }
 }

@@ -15,11 +15,12 @@ public class Appointment {
     private int customerID;
     private int userID;
     private int contactID;
+    private String contact;
 
 
     public Appointment(int id, String title, String description, String location, String type,
                        ZonedDateTime startTime, ZonedDateTime endTime, String createdBy, String lastUpdateBy,
-                       int customerID, int userID, int contactID) {
+                       int customerID, int userID, int contactID, String contact) {
         this.id = id;
         this.title = title;
         this.description = description;
@@ -32,6 +33,7 @@ public class Appointment {
         this.customerID = customerID;
         this.userID = userID;
         this.contactID = contactID;
+        this.contact = contact;
     }
 
     public int getId() {
@@ -130,5 +132,11 @@ public class Appointment {
         this.contactID = contactID;
     }
 
+    public String getContact() {
+        return contact;
+    }
 
+    public void setContact(String contact) {
+        this.contact = contact;
+    }
 }
