@@ -49,7 +49,10 @@ public class homeController implements Initializable {
     public TableColumn apptStartCol;
     public TableColumn apptEndCol;
     public TableColumn apptCustomerIDCol;
+
     public Button addAppointmentButton;
+    public Button updateAppointmentButton;
+    public Button deleteAppointment;
 
 
     ObservableList<Customer> allCustomers = FXCollections.observableArrayList();
@@ -61,7 +64,6 @@ public class homeController implements Initializable {
     public void initialize(URL url, ResourceBundle resourceBundle) {
 
 
-
         try {
             //Create a query based on the string variable to get the country ID
             String sql = "SELECT * FROM customers";
@@ -70,7 +72,7 @@ public class homeController implements Initializable {
             ps.executeQuery(); //Runs the sql query
             ResultSet customerRS = ps.getResultSet(); //Setting the results of the query to a result set
 
-            while (customerRS.next()){
+            while (customerRS.next()) {
                 int customerID = customerRS.getInt("Customer_ID");
                 String customerName = customerRS.getString("Customer_Name");
                 String customerAddress = customerRS.getString("Address");
@@ -88,7 +90,7 @@ public class homeController implements Initializable {
         }
 
 
-        try{
+        try {
             //Create a query to get all the appointments from the DB
             String sql = "SELECT * FROM appointments";
             DBQuery.setPreparedStatement(DBConnect.getConnection(), sql); //Creating the prepared statement object
@@ -96,7 +98,7 @@ public class homeController implements Initializable {
             ps.executeQuery(); //Runs the sql query
             ResultSet appointmentRS = ps.getResultSet(); //Setting the results of the query to a result set
 
-            while(appointmentRS.next()){
+            while (appointmentRS.next()) {
                 int apptID = appointmentRS.getInt("Appointment_ID");
                 String apptTitle = appointmentRS.getString("Title");
                 String apptDescription = appointmentRS.getString("Description");
@@ -115,15 +117,15 @@ public class homeController implements Initializable {
 
                 ZoneId tz = ZoneId.of(timeZone.timeZoneName());
 
-                ZonedDateTime apptEndlocal = ZonedDateTime.ofInstant(apptEnd.toInstant(),tz);
+                ZonedDateTime apptEndlocal = ZonedDateTime.ofInstant(apptEnd.toInstant(), tz);
 
 
-                System.out.println(tz);
-                System.out.println(apptEnd);
+                //System.out.println(tz);
+                //System.out.println(apptEnd);
 
                 //apptEnd.ofInstant(apptEnd.toInstant(),tz);
 
-                System.out.println("After conversion: " + apptEndlocal);
+                //System.out.println("After conversion: " + apptEndlocal);
 
                 String apptCreator = appointmentRS.getString("Created_By");
                 String apptUpdater = appointmentRS.getString("Last_Updated_By");
@@ -139,8 +141,7 @@ public class homeController implements Initializable {
             }
 
 
-
-        } catch (Exception SQLException){
+        } catch (Exception SQLException) {
             System.out.println("Database Error from the appointments.");
         }
 
@@ -178,44 +179,45 @@ public class homeController implements Initializable {
         stage.setScene(scene);
         stage.show();
     }
-    /**Deletes the customer selected from the table after user confirmation and then adjusts the list of customers to display.*/
+
+    /**
+     * Deletes the customer selected from the table after user confirmation and then adjusts the list of customers to display.
+     */
     public void deleteCustomerButtonClick(ActionEvent actionEvent) throws IOException, SQLException {
         //Check for any active appointments first.
 
 
-       Customer deleteCheck = (Customer) customerTable.getSelectionModel().getSelectedItem();
+        Customer deleteCheck = (Customer) customerTable.getSelectionModel().getSelectedItem();
 
-       if(deleteCheck == null) {
+        if (deleteCheck == null) {
 
-           displayMessages.errorMsg("No customer was selected. Please select one to delete.");
+            displayMessages.errorMsg("No customer was selected. Please select one to delete.");
 
-       } else {
-           //Sets a dialog to ensure the user wants to delete
-           var deleteConfirm = new Alert(Alert.AlertType.CONFIRMATION, "", ButtonType.YES, ButtonType.NO, ButtonType.CANCEL);
-           deleteConfirm.setTitle("Confirm Delete");
-           deleteConfirm.setContentText("Are you sure you want to delete the selected item?");
-           deleteConfirm.showAndWait();
-           //If the user presses yes, the part is deleted from the part table
-           if (deleteConfirm.getResult() == ButtonType.YES) {
+        } else {
+            //Sets a dialog to ensure the user wants to delete
+            var deleteConfirm = new Alert(Alert.AlertType.CONFIRMATION, "", ButtonType.YES, ButtonType.NO, ButtonType.CANCEL);
+            deleteConfirm.setTitle("Confirm Delete");
+            deleteConfirm.setContentText("Are you sure you want to delete the selected item?");
+            deleteConfirm.showAndWait();
+            //If the user presses yes, the part is deleted from the part table
+            if (deleteConfirm.getResult() == ButtonType.YES) {
 
-               //Run a delete query
+                //Run a delete query
 
-               String sql = "DELETE FROM customers WHERE Customer_ID = ?";
-               DBQuery.setPreparedStatement(DBConnect.getConnection(), sql); //Creating the prepared statement object
-               PreparedStatement ps = DBQuery.getPreparedStatement(); //referencing the prepared statement
-               ps.setString(1, String.valueOf(deleteCheck.getId())); //Getting the string representation of the id
-               ps.executeUpdate(); //Runs the sql query
-               //ResultSet countryID_RS = ps.getResultSet(); //Setting the results of the query to a result set
+                String sql = "DELETE FROM customers WHERE Customer_ID = ?";
+                DBQuery.setPreparedStatement(DBConnect.getConnection(), sql); //Creating the prepared statement object
+                PreparedStatement ps = DBQuery.getPreparedStatement(); //referencing the prepared statement
+                ps.setString(1, String.valueOf(deleteCheck.getId())); //Getting the string representation of the id
+                ps.executeUpdate(); //Runs the sql query
+                //ResultSet countryID_RS = ps.getResultSet(); //Setting the results of the query to a result set
 
-               //Update the table view
-               allCustomers.remove(deleteCheck);
+                //Update the table view
+                allCustomers.remove(deleteCheck);
 
-               //Show a dialog that the delete was successful.
+                //Show a dialog that the delete was successful.
 
-           }
-       }
-
-
+            }
+        }
 
 
     }
@@ -227,22 +229,23 @@ public class homeController implements Initializable {
         ((Stage) (((Node) actionEvent.getSource()).getScene().getWindow())).close();
     }
 
+    /***/
     public void updateCustomerButtonClick(ActionEvent actionEvent) {
         //The try-catch block is used to avoid a null pointed error if the button is pushed with nothing selected.
 
         try {
-            //Initializes the Modify Part controller
+            //Initializes the Modify Customer controller
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/Views/modCustomer.fxml"));
             Parent root = loader.load();
             modCustomerController mod = loader.getController();
 
-            //Sends the selected part to the modify part controller
+            //Sends the selected customer to the modify customer controller
             mod.receiveCustomer((Customer) customerTable.getSelectionModel().getSelectedItem());
 
-            //Shows the modify part controller after passing the data from the selected part
+            //Shows the modify customer controller after passing the data from the selected customer
             Stage stage = (Stage) ((Node) actionEvent.getSource()).getScene().getWindow();
             Scene scene = new Scene(root);
-            stage.setTitle("Modify Part");
+            stage.setTitle("Modify Customer");
             stage.setScene(scene);
             stage.show();
         } catch (Exception e) {
@@ -253,7 +256,9 @@ public class homeController implements Initializable {
 
     }
 
-    /**Loads the add appointment for when the add appointment button has been clicked.*/
+    /**
+     * Loads the add appointment for when the add appointment button has been clicked.
+     */
     public void addAppointmentButtonClick(ActionEvent actionEvent) throws IOException {
         Parent root = FXMLLoader.load(addCustomer.class.getResource("/views/addAppointment.fxml"));
         Stage stage = (Stage) ((Node) actionEvent.getSource()).getScene().getWindow();
@@ -261,5 +266,70 @@ public class homeController implements Initializable {
         stage.setTitle("DFC - Add Appointment");
         stage.setScene(scene);
         stage.show();
+    }
+
+    /***/
+    public void updateAppointmentButtonClick(ActionEvent actionEvent) {
+        //The try-catch block is used to avoid a null pointed error if the button is pushed with nothing selected.
+
+        try {
+            //Initializes the Modify Appointment controller
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/Views/modAppointment.fxml"));
+            Parent root = loader.load();
+            modAppointment mod = loader.getController();
+
+            //Sends the selected part to the modify part controller
+            mod.receiveAppt((Appointment) apptTable.getSelectionModel().getSelectedItem());
+
+            //Shows the modify Appointment controller after passing the data from the selected Appointment
+            Stage stage = (Stage) ((Node) actionEvent.getSource()).getScene().getWindow();
+            Scene scene = new Scene(root);
+            stage.setTitle("Modify Appointment");
+            stage.setScene(scene);
+            stage.show();
+        } catch (Exception e) {
+            //If nothing was selected when this button is pushed, an error is displayed.
+
+            displayMessages.errorMsg("No appointment was selected. Please select one to modify.");
+        }
+
+    }
+
+
+    /**
+     * Deletes the selected appointment from the database and updates the display to remove it from view.
+     */
+    public void deleteAppointmentClick(ActionEvent actionEvent) throws SQLException {
+
+
+        Appointment deleteCheck = (Appointment) apptTable.getSelectionModel().getSelectedItem();
+
+        if (deleteCheck == null) {
+
+            displayMessages.errorMsg("No appointment was selected. Please select one to delete.");
+
+        } else {
+            //Sets a dialog to ensure the user wants to delete
+            var deleteConfirm = new Alert(Alert.AlertType.CONFIRMATION, "", ButtonType.YES, ButtonType.NO, ButtonType.CANCEL);
+            deleteConfirm.setTitle("Confirm Delete");
+            deleteConfirm.setContentText("Are you sure you want to delete the selected item?");
+            deleteConfirm.showAndWait();
+            //If the user presses yes, the part is deleted from the part table
+            if (deleteConfirm.getResult() == ButtonType.YES) {
+
+                //Run a delete query
+
+                String sql = "DELETE FROM appointments WHERE Appointment_ID = ?";
+                DBQuery.setPreparedStatement(DBConnect.getConnection(), sql); //Creating the prepared statement object
+                PreparedStatement ps = DBQuery.getPreparedStatement(); //referencing the prepared statement
+                ps.setString(1, String.valueOf(deleteCheck.getId())); //Getting the string representation of the id
+                ps.executeUpdate(); //Runs the sql query
+
+
+                //Update the table view
+                allAppointments.remove(deleteCheck);
+            }
+            //Show a dialog that the delete was successful.
+        }
     }
 }

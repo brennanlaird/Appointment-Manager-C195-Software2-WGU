@@ -30,5 +30,7 @@
         </columns>
       </TableView>
       <Button fx:id="addAppointmentButton" layoutX="717.0" layoutY="99.0" mnemonicParsing="false" onAction="#addAppointmentButtonClick" text="Add Appointment" />
+      <Button fx:id="updateAppointmentButton" layoutX="717.0" layoutY="153.0" mnemonicParsing="false" onAction="#updateAppointmentButtonClick" text="Update Appointment" />
+      <Button fx:id="deleteAppointment" layoutX="717.0" layoutY="202.0" mnemonicParsing="false" onAction="#deleteAppointmentClick" text="Delete Appointment" />
    </children>
 </AnchorPane>
