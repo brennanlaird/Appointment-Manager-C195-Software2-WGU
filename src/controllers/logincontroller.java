@@ -18,7 +18,9 @@ import java.sql.*;
 import java.util.Locale;
 import java.util.ResourceBundle;
 
-/***/
+/**
+ * Class to control the login form.
+ */
 public class logincontroller implements Initializable {
     public TextField usernameTextBox;
     public TextField passTextBox;
@@ -30,17 +32,22 @@ public class logincontroller implements Initializable {
     public Label passLabel;
     public Label headerLabel;
 
-    /***/
+    /**
+     * Initilizes the login form by checking the current time zone for display and changing labels
+     * based on user language settings.
+     */
     @Override
     public void initialize(URL U, ResourceBundle resourceBundle) {
         //Get the current timezone and change the label.
         tzLabel.setText(timeZone.timeZoneName());
 
         langLabel.setText(Locale.getDefault().getLanguage());
-        //if the language is french then change the all the labels.
 
+
+        //String variable to store the users language setting.
         String userLang = Locale.getDefault().getLanguage();
 
+        //if the language is french then change the all the labels.
         if (userLang.equals("fr")) {
             exitButton.setText("Sortir");
             loginButton.setText("Connexion");
@@ -51,9 +58,11 @@ public class logincontroller implements Initializable {
     }
 
 
-    /***/
+    /**
+     * Gets the user ID and password input and checks them against the database.
+     */
     public void loginButtonClick(ActionEvent actionEvent) throws SQLException, IOException {
-        //get the string value from the username and password text boxes
+        //Get the string value from the username and password text boxes
         String userName = usernameTextBox.getText();
         String userPass = passTextBox.getText();
 
@@ -64,8 +73,8 @@ public class logincontroller implements Initializable {
         String getUserTable = "SELECT * FROM users";
 
 
-        Connection c = DBConnect.getConnection();
-        DBQuery.setPreparedStatement(c, getUserTable);
+        Connection c = DBConnect.getConnection(); //Creating the connection to the database
+        DBQuery.setPreparedStatement(c, getUserTable); //Setting up the prepared statement
 
         PreparedStatement statement = DBQuery.getPreparedStatement();
 
@@ -74,31 +83,33 @@ public class logincontroller implements Initializable {
         statement.execute(getUserTable);
         ResultSet rs = statement.getResultSet();
 
+        //boolean flag to change if both username and password are correct
         boolean loginSuccess = false;
 
+        //Loop through each username and password in the result set and compare to the text entered.
         while (rs.next()) {
             String userNameDB = rs.getString("User_Name");
             String passDB = rs.getString("Password");
 
-            //System.out.println(userNameDB + " : " + passDB);
 
             //If the user name and password entered match and entry then the login is successful.
             if (userName.equals(userNameDB) && userPass.equals(passDB)) {
-                loginSuccess = true;
-                break;
+                loginSuccess = true; //change the flag variable to true
+                break; //exit the loop
             }
 
 
         }
 
         if (!loginSuccess) {
-
+//Set a string to display an english error message.
             String loginError = "Incorrect username or password.";
 
-            if (Locale.getDefault().getLanguage().equals("fr")){
+            if (Locale.getDefault().getLanguage().equals("fr")) {
+                //If the user language is french, change the error message.
                 loginError = "Identifiant ou mot de passe incorrect.";
             }
-
+            //Display the error message.
             displayMessages.errorMsg(loginError);
         }
 
@@ -107,12 +118,7 @@ public class logincontroller implements Initializable {
             userInfo.saveUsername = userName;
 
             //If login was successful, load the main screen
-            Parent root = FXMLLoader.load(addCustomer.class.getResource("/views/homeScreen.fxml"));
-            Stage stage = (Stage) ((Node) actionEvent.getSource()).getScene().getWindow();
-            Scene scene = new Scene(root);
-            stage.setTitle("DFC - Scheduler");
-            stage.setScene(scene);
-            stage.show();
+            returnHome.loadHome(actionEvent);
         }
 
     }
