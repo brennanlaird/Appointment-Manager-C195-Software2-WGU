@@ -2,6 +2,9 @@ package objects;
 
 import java.time.ZonedDateTime;
 
+/**
+ * This class sets up appointment objects.
+ */
 public class Appointment {
     private int id;
     private String title;
@@ -17,7 +20,7 @@ public class Appointment {
     private int contactID;
     private String contact;
 
-
+//Constructor for the appointment class.
     public Appointment(int id, String title, String description, String location, String type,
                        ZonedDateTime startTime, ZonedDateTime endTime, String createdBy, String lastUpdateBy,
                        int customerID, int userID, int contactID, String contact) {

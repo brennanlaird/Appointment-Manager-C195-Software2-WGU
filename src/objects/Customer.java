@@ -1,5 +1,8 @@
 package objects;
 
+/**
+ * Class to set up and store customer objects.
+ */
 public class Customer {
     private int id;
     private String name;

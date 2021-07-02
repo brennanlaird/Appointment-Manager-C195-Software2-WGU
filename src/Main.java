@@ -12,7 +12,7 @@ import java.sql.Statement;
 
 public class Main extends Application {
 
-    /***/
+    /**Shows the main screen of the application upon loading.*/
     @Override
     public void start(Stage primaryStage) throws Exception{
         Parent root = FXMLLoader.load(getClass().getResource("/Views/login.fxml"));
@@ -27,31 +27,9 @@ public class Main extends Application {
         DBConnect.startConnection();
 
 
-
-
-        //Inserting country data as a test.
-/*
-        //Create the statement object
-        DBQuery.setPreparedStatement(DBConnect.getConnection(), );
-
-        //Get the statement object
-        Statement statement = DBQuery.getStatement();
-
-        //SQL statement as a string
-        String sql = "INSERT INTO countries(Country, Create_Date, Created_By, Last_Updated_By) VALUES('Wakanda', '2021-06-15 11:00:00', 'Tchaka', 'Tchalla')";
-
-        //Execute the SQL statement
-        statement.execute(sql);
-
-        if (statement.getUpdateCount()>0){
-            System.out.println("Inserted " + statement.getUpdateCount() + " thing.");
-        } else {
-            System.out.println("Nothing changed.");
-        }
-*/
-
         launch(args);
 
+        //Closes the connection to the database.
         DBConnect.closeConnection();
     }
 }

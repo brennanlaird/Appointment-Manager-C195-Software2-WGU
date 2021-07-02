@@ -2,7 +2,8 @@ package utilities;
 
 import java.sql.*;
 
-/***/
+/**This class is used to manage the connection to the database. The initial variables are static and used to build the
+ * connection string. */
 public class DBConnect {
     //JDBC URL Parts
     //Protocol for DB connection
@@ -33,29 +34,43 @@ public class DBConnect {
     //DB Password
     private static final String dbPass = "53689231527";
 
-    //Prints the URL as a test
-    public static void printURL() {
-        System.out.println(jdbcURL);
-    }
-
-    public static Connection startConnection() throws SQLException {
-        //TO DO - Add try catch blocks to deal with errors instead of throwing the SQL Exception.
-        dbConnect = DriverManager.getConnection(jdbcURL, dbUser, dbPass);
-        //Statement statement = dbConnect.createStatement();
-        //ResultSet testResult = statement.executeQuery("select * from countries");
-        System.out.println("Connection successful.");
+    /**
+     * Opens a connection to the database.
+     * @return The connection to the database.
+     */
+    public static Connection startConnection()  {
+        //Try catch will catch a sql error and display an error message with the error code.
+        try {
+            //Sets up the connection object using the static variables defined in the class.
+            dbConnect = DriverManager.getConnection(jdbcURL, dbUser, dbPass);
+        }
+        catch (SQLException sqlException) {
+            displayMessages.errorMsg("Database error " + sqlException.getErrorCode());
+        }
+        //System.out.println("Connection successful.");
         return dbConnect;
     }
 
-    //Returns the open connection. This way we do not have to open the connection each time.
+    /**
+     * Returns the open connection so the connection does not have to be opened each time.
+     * @return The connection to the database.
+     */
     public static Connection getConnection(){
         return dbConnect;
     }
 
-    public static void closeConnection() throws SQLException {
-        //TO DO - Try-Catch to handle the SQL Exception
-        dbConnect.close();
-        System.out.println("Connection closed.");
+    /**
+     * Closes the connection to the database.
+     */
+    public static void closeConnection()  {
+        try {
+            dbConnect.close();
+        }
+        catch (Exception e){
+            //Ignore the catch, this method is only called on program exit.
+        }
+
+        //System.out.println("Connection closed.");
     }
 
 

@@ -15,12 +15,20 @@ public class displayMessages {
         alert.showAndWait();
     }
 
+    /**
+     * Displays an informational message.
+     * @param msg The string to display on the message box.
+     */
     public static void infoMsg(String msg) {
         var alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setContentText(msg);
         alert.showAndWait();
     }
 
+    /**
+     * Displays a custom informational message with the appointment ID when an appointment is cancelled.
+     * @param id The ID of the appointment that was cancelled/deleted.
+     */
     public static void apptCanceled(int id){
         var alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setContentText("Appointment ID " + id + " has been cancelled.");
