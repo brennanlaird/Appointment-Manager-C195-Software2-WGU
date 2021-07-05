@@ -66,6 +66,9 @@ public class logincontroller implements Initializable {
         String userName = usernameTextBox.getText();
         String userPass = passTextBox.getText();
 
+        //Log the user name that was used for the login.
+        logFile.logAttempt(userName);
+
         //check the username against the DB
 
         //Get the connection and set a statement object with that connection.
@@ -95,6 +98,7 @@ public class logincontroller implements Initializable {
             //If the user name and password entered match and entry then the login is successful.
             if (userName.equals(userNameDB) && userPass.equals(passDB)) {
                 loginSuccess = true; //change the flag variable to true
+                logFile.logStatus(loginSuccess);
                 break; //exit the loop
             }
 
@@ -103,6 +107,7 @@ public class logincontroller implements Initializable {
 
         if (!loginSuccess) {
 //Set a string to display an english error message.
+            logFile.logStatus(loginSuccess);
             String loginError = "Incorrect username or password.";
 
             if (Locale.getDefault().getLanguage().equals("fr")) {
