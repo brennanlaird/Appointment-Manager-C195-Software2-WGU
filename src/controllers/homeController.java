@@ -111,6 +111,11 @@ public class homeController implements Initializable {
             ps.executeQuery(); //Runs the sql query
             ResultSet appointmentRS = ps.getResultSet(); //Setting the results of the query to a result set
 
+            //Declares a local date time as null to store the minimum start time.
+            LocalDateTime minStart = null;
+            //Declares a null appointment object to store the information about the next appointment.
+            Appointment nextAppt = null;
+
             while (appointmentRS.next()) {
                 int apptID = appointmentRS.getInt("Appointment_ID");
                 String apptTitle = appointmentRS.getString("Title");
@@ -133,6 +138,10 @@ public class homeController implements Initializable {
                 ZonedDateTime apptEndlocal = ZonedDateTime.ofInstant(apptEnd.toInstant(), tz);
 
 
+
+
+
+
                 //System.out.println(tz);
                 //System.out.println(apptEnd);
 
@@ -152,8 +161,19 @@ public class homeController implements Initializable {
                         apptEnd, apptCreator, apptUpdater, apptCustomerID, apptUserID, apptContactID, apptContact);
                 allAppointments.add(temp);
 
+                //Store the minimum start time that is next and in the future.
+                if (minStart == null && startTime.isAfter(LocalDateTime.now())) {
+                    minStart = startTime;
+                    nextAppt = temp;
+                } else if (minStart !=  null && startTime.isBefore(minStart) && startTime.isAfter(LocalDateTime.now())) {
+                    minStart = startTime;
+                    nextAppt = temp;
+                }
 
             }
+
+            displayMessages.apptUpcoming(nextAppt.getId(),minStart);
+
 
 
         } catch (Exception SQLException) {
