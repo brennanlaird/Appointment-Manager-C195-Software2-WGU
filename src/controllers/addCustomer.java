@@ -108,7 +108,7 @@ public class addCustomer implements Initializable {
         firstLevelLabel.setDisable(false);
         firstLevelCombo.setDisable(false);
 
-        //Put the selected string form the combo into a variable
+        //Put the selected string from the combo into a variable
         String countrySelected = (String) countryCombo.getSelectionModel().getSelectedItem();
 
         //If-else block to set the label based on the country selected.

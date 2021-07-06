@@ -5,6 +5,7 @@ import javafx.scene.Scene;
 import javafx.stage.Stage;
 import utilities.DBConnect;
 import utilities.DBQuery;
+import utilities.meetingTypes;
 import utilities.timeZone;
 
 import java.sql.SQLException;
@@ -25,6 +26,8 @@ public class Main extends Application {
     public static void main(String[] args) throws SQLException, ClassNotFoundException {
         //Starts the connection to the mysql DB
         DBConnect.startConnection();
+
+        meetingTypes.populateAppointmentTypes();
 
 
         launch(args);

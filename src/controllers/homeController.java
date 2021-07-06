@@ -59,6 +59,7 @@ public class homeController implements Initializable {
     public RadioButton viewWeekRadio;
     public RadioButton viewMonthRadio;
     public ToggleGroup apptFilter;
+    public Button reportsButton;
 
 
     ObservableList<Customer> allCustomers = FXCollections.observableArrayList();
@@ -401,5 +402,18 @@ public class homeController implements Initializable {
         LocalDate oneMonth = LocalDate.now().plus(31, ChronoUnit.DAYS);
         FilteredList<Appointment> monthlyAppt = new FilteredList<>(allAppointments, i -> (i.getEndTime().toLocalDate().compareTo(oneMonth)) < 0 && (rightNow.compareTo(i.getEndTime().toLocalDate()) < 0));
         apptTable.setItems(monthlyAppt);
+    }
+
+    /**
+     *
+     * @param actionEvent
+     */
+    public void reportsButtonClick(ActionEvent actionEvent) throws IOException {
+        Parent root = FXMLLoader.load(addCustomer.class.getResource("/views/reports.fxml"));
+        Stage stage = (Stage) ((Node) actionEvent.getSource()).getScene().getWindow();
+        Scene scene = new Scene(root);
+        stage.setTitle("DFC - Reports");
+        stage.setScene(scene);
+        stage.show();
     }
 }

@@ -34,6 +34,7 @@ public class modAppointment implements Initializable {
 
     public Label tzLabel;
 
+public  ComboBox typeComboBox;
 
     public ComboBox customerCombo;
     public ComboBox contactCombo;
@@ -45,6 +46,7 @@ public class modAppointment implements Initializable {
     public void initialize(URL url, ResourceBundle resourceBundle) {
         //Sets the label to show the current time zone name.
         tzLabel.setText(timeZone.timeZoneName());
+        typeComboBox.setItems(meetingTypes.getApptTypes());
     }
 
     /***/
@@ -62,7 +64,8 @@ public class modAppointment implements Initializable {
         titleTextBox.setText(String.valueOf(modAppt.getTitle()));
         descriptionTextBox.setText(String.valueOf(modAppt.getDescription()));
         locationTextBox.setText(String.valueOf(modAppt.getLocation()));
-        typeTextBox.setText(String.valueOf(modAppt.getType()));
+        //typeTextBox.setText(String.valueOf(modAppt.getType()));
+        typeComboBox.setValue(String.valueOf(modAppt.getType()));
 
         //Converts the passed in appointment start time to a local date then sets the date picker to display that date.
         LocalDate apptDate = modAppt.getStartTime().toLocalDate();
@@ -170,7 +173,8 @@ public class modAppointment implements Initializable {
         String apptTitle = titleTextBox.getText();
         String apptDescription = descriptionTextBox.getText();
         String apptLocation = locationTextBox.getText();
-        String apptType = typeTextBox.getText();
+        //String apptType = typeTextBox.getText();
+        String apptType = (String) typeComboBox.getSelectionModel().getSelectedItem();
         String currentUser = userInfo.saveUsername; //used for created by and last update by
 
         try {

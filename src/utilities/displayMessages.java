@@ -55,7 +55,7 @@ public class displayMessages {
             System.out.println(minutes);
         } else {
             //Display the id and time of the next available appointment.
-            infoMsg("Appointment " + id + " is at " + apptDateTime.toLocalTime() + " and is within 15 minutes.");
+            infoMsg("Appointment ID " + id + " is at " + apptDateTime.toLocalTime() + " and is within 15 minutes.");
             System.out.println(minutes);
         }
 

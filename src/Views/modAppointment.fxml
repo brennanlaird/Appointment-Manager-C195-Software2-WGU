@@ -33,7 +33,7 @@
             <HBox prefHeight="40.0" prefWidth="150.0">
                <children>
                   <Label prefWidth="150.0" text="Appointment Type" />
-                  <TextField fx:id="typeTextBox" />
+                  <ComboBox fx:id="typeComboBox" prefWidth="150.0" />
                </children></HBox>
             <HBox prefHeight="40.0" prefWidth="200.0">
                <children>

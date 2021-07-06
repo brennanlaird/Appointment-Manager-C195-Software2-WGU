@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+
+<AnchorPane prefHeight="600.0" prefWidth="910.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.reportsController">
+   <children>
+      <Label layoutX="334.0" layoutY="14.0" text="Reports">
+         <font>
+            <Font name="System Bold" size="24.0" />
+         </font>
+      </Label>
+      <HBox layoutX="7.0" layoutY="57.0" prefHeight="29.0" prefWidth="742.0">
+         <children>
+            <RadioButton fx:id="apptTypeButton" mnemonicParsing="false" onAction="#apptTypeButtonSelect" text="Appointment Type">
+               <toggleGroup>
+                  <ToggleGroup fx:id="reportType" />
+               </toggleGroup>
+               <HBox.margin>
+                  <Insets right="100.0" />
+               </HBox.margin>
+            </RadioButton>
+            <RadioButton fx:id="contactScheduleButton" mnemonicParsing="false" onAction="#contactScheduleButton" text="Contact Schedule" toggleGroup="$reportType">
+               <HBox.margin>
+                  <Insets right="100.0" />
+               </HBox.margin>
+            </RadioButton>
+            <RadioButton fx:id="customerScheduleButton" mnemonicParsing="false" onAction="#customerScheduleButtonSelect" text="Customer Schedule" toggleGroup="$reportType">
+               <HBox.margin>
+                  <Insets right="100.0" />
+               </HBox.margin>
+            </RadioButton>
+         </children>
+      </HBox>
+      <AnchorPane fx:id="contactPane" layoutX="14.0" layoutY="86.0" prefHeight="462.0" prefWidth="889.0" visible="false">
+         <children>
+            <TableView fx:id="contactTable" layoutX="14.0" layoutY="49.0" prefHeight="412.0" prefWidth="873.0">
+              <columns>
+                <TableColumn fx:id="apptIDCol" prefWidth="100.0" text="Appointment ID" />
+                  <TableColumn fx:id="apptTitleCol" prefWidth="115.0" text="Title" />
+                  <TableColumn fx:id="apptTypeCol" prefWidth="100.0" text="Type" />
+                  <TableColumn fx:id="apptDescriptionCol" prefWidth="184.0" text="Description" />
+                  <TableColumn fx:id="apptStartCol" prefWidth="120.0" text="Start Time &amp; Date" />
+                  <TableColumn fx:id="apptEndCol" prefWidth="128.0" text="End Time &amp; Date" />
+                  <TableColumn fx:id="customerIDCol" prefWidth="125.0" text="Customer ID" />
+              </columns>
+            </TableView>
+            <ComboBox fx:id="contactNameCombo" layoutX="199.0" layoutY="14.0" onAction="#contactNameComboChange" prefWidth="150.0" />
+         </children>
+      </AnchorPane>
+      <Button fx:id="returnToMain" layoutX="367.0" layoutY="561.0" mnemonicParsing="false" onAction="#returnToMainClick" prefHeight="35.0" prefWidth="170.0" text="Return to Main" />
+      <AnchorPane fx:id="customerPane" layoutX="14.0" layoutY="86.0" prefHeight="462.0" prefWidth="889.0" visible="false">
+         <children>
+            <ComboBox fx:id="customerCombo" layoutX="429.0" layoutY="14.0" onAction="#customerComboChange" prefWidth="150.0" />
+            <TableView fx:id="customerTable" layoutX="14.0" layoutY="46.0" prefHeight="412.0" prefWidth="873.0">
+              <columns>
+                  <TableColumn fx:id="apptIDColCustomer" prefWidth="100.0" text="Appointment ID" />
+                  <TableColumn fx:id="apptTitleColCustomer" prefWidth="115.0" text="Title" />
+                  <TableColumn fx:id="apptTypeColCustomer" prefWidth="100.0" text="Type" />
+                  <TableColumn fx:id="apptDescriptionColCustomer" prefWidth="184.0" text="Description" />
+                  <TableColumn fx:id="apptStartColCustomer" prefWidth="120.0" text="Start Time &amp; Date" />
+                  <TableColumn fx:id="apptEndColCustomer" prefWidth="128.0" text="End Time &amp; Date" />
+                  <TableColumn fx:id="contactIDColCustomer" prefWidth="125.0" text="Contact ID" />
+              </columns>
+            </TableView>
+         </children>
+      </AnchorPane>
+      <AnchorPane fx:id="apptTypePane" layoutX="14.0" layoutY="80.0" prefHeight="477.0" prefWidth="889.0">
+         <children>
+            <TableView fx:id="currentMonthTable" layoutX="14.0" layoutY="73.0" prefHeight="140.0" prefWidth="170.0">
+              <columns>
+                <TableColumn fx:id="apptTypeCol1" prefWidth="115.0" text="Appointment Type" />
+                <TableColumn prefWidth="53.0" text="Count" />
+              </columns>
+            </TableView>
+            <ComboBox fx:id="monthComboBox" layoutX="14.0" layoutY="14.0" onAction="#monthComboBoxChange" prefWidth="150.0" />
+            <Label fx:id="testLabel" layoutX="14.0" layoutY="56.0" text="Label">
+               <font>
+                  <Font size="14.0" />
+               </font></Label>
+         </children>
+      </AnchorPane>
+   </children>
+</AnchorPane>

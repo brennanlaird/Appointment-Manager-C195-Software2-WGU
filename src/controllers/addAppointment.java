@@ -44,8 +44,7 @@ public class addAppointment implements Initializable {
     public ComboBox contactCombo;
     public ComboBox startTimeCombo;
     public ComboBox endTimeCombo;
-
-
+    public ComboBox typeComboBox;
 
 
     /**Sets up the combo boxes and the spinner boxes for the add appointment form.*/
@@ -60,6 +59,7 @@ public class addAppointment implements Initializable {
         //Sets the time zone label to display the name of the users current time zone.
         tzLabel.setText(timeZone.timeZoneName());
 
+        typeComboBox.setItems(meetingTypes.getApptTypes());
 
         //Gets the default time zone to as a ZoneId object
         ZoneId tzName = ZoneId.of(timeZone.timeZoneName());
@@ -161,8 +161,13 @@ public class addAppointment implements Initializable {
         String apptTitle = titleTextBox.getText();
         String apptDescription = descriptionTextBox.getText();
         String apptLocation = locationTextBox.getText();
-        String apptType = typeTextBox.getText();
+        //String apptType = typeTextBox.getText();
+        String apptType = (String) typeComboBox.getSelectionModel().getSelectedItem();
         String currentUser = userInfo.saveUsername; //used for created by and last update by
+
+
+
+
 
         try {
             LocalDate formDate = datePicker.getValue();

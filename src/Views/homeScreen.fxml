@@ -52,5 +52,6 @@
             <RadioButton fx:id="viewMonthRadio" mnemonicParsing="false" onAction="#viewMonthRadioClick" text="Show Upcoming Month" toggleGroup="$apptFilter" />
          </children>
       </HBox>
+      <Button fx:id="reportsButton" layoutX="897.0" layoutY="124.0" mnemonicParsing="false" onAction="#reportsButtonClick" prefHeight="59.0" prefWidth="78.0" text="Reports" />
    </children>
 </AnchorPane>
