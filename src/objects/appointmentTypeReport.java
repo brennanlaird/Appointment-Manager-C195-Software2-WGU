@@ -1,35 +1,20 @@
 package objects;
 
+import java.time.Month;
+import java.time.ZonedDateTime;
+
 /**
  *
  */
 public class appointmentTypeReport {
-    private String month;
-    private int year;
-    private int count;
     private String type;
+    private ZonedDateTime date;
 
-    public appointmentTypeReport(String month, int year, int count, String type) {
-        this.month = month;
-        this.year = year;
-        this.count = count;
+
+
+    public  appointmentTypeReport(String type, ZonedDateTime date) {
         this.type = type;
-    }
-
-    public void setCount(int count) {
-        this.count = count;
-    }
-
-    public int getCount() {
-        return count;
-    }
-
-    public void setMonth(String month) {
-        this.month = month;
-    }
-
-    public String getMonth() {
-        return month;
+        this.date = date;
     }
 
     public void setType(String type) {
@@ -40,11 +25,11 @@ public class appointmentTypeReport {
         return type;
     }
 
-    public void setYear(int year) {
-        this.year = year;
+    public void setDate(ZonedDateTime date) {
+        this.date = date;
     }
 
-    public int getYear() {
-        return year;
+    public ZonedDateTime getDate() {
+        return date;
     }
 }

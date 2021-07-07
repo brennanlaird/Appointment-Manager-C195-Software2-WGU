@@ -75,14 +75,9 @@
       </VBox>
       <HBox layoutX="57.0" layoutY="474.0" prefHeight="50.0" prefWidth="328.0" AnchorPane.leftAnchor="20.0" AnchorPane.rightAnchor="20.0">
          <children>
-            <Button fx:id="clearFormButton" mnemonicParsing="false" onAction="#clearFormButtonClick" text="Clear Form">
-               <HBox.margin>
-                  <Insets right="100.0" />
-               </HBox.margin>
-            </Button>
             <Button fx:id="saveButton" mnemonicParsing="false" onAction="#saveButtonClick" text="Save">
                <HBox.margin>
-                  <Insets right="100.0" />
+                  <Insets left="100.0" right="100.0" />
                </HBox.margin>
             </Button>
             <Button fx:id="cancelButton" mnemonicParsing="false" onAction="#cancelButtonClick" text="Cancel" />

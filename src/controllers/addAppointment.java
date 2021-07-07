@@ -33,7 +33,7 @@ public class addAppointment implements Initializable {
     public HBox datePick;
     public DatePicker datePicker;
 
-    public Button clearFormButton;
+
     public Button saveButton;
     public Button cancelButton;
 
@@ -47,19 +47,23 @@ public class addAppointment implements Initializable {
     public ComboBox typeComboBox;
 
 
-    /**Sets up the combo boxes and the spinner boxes for the add appointment form.*/
+    /**
+     * Sets up the combo boxes and the spinner boxes for the add appointment form.
+     */
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         //Set up an observable list to display the customer names and Contact names
         ObservableList<String> customerList = FXCollections.observableArrayList();
         ObservableList<String> contactList = FXCollections.observableArrayList();
 
+        //Sets up an observable list to display the appointment times.
         ObservableList<String> timeList = FXCollections.observableArrayList();
 
         //Sets the time zone label to display the name of the users current time zone.
         tzLabel.setText(timeZone.timeZoneName());
 
-        typeComboBox.setItems(meetingTypes.getApptTypes());
+        //Sets the combobox to display the available meeting types.
+        typeComboBox.setItems(meetingTypes.getMeetTypesCombo());
 
         //Gets the default time zone to as a ZoneId object
         ZoneId tzName = ZoneId.of(timeZone.timeZoneName());
@@ -68,10 +72,6 @@ public class addAppointment implements Initializable {
         ZonedDateTime startBusinessLocal = timeZone.startBusinessHours(tzName);
         ZonedDateTime endBusinessLocal = timeZone.endBusinessHours(tzName);
 
-
-
-
-
         //Date formatter to convert the zoned date times to only the times.
         DateTimeFormatter formatToString = DateTimeFormatter.ISO_LOCAL_TIME;
 
@@ -79,25 +79,32 @@ public class addAppointment implements Initializable {
         String startTimeLocal = startBusinessLocal.format(formatToString);
         String endTimeLocal = endBusinessLocal.format(formatToString);
 
-        ZonedDateTime addingTime = startBusinessLocal;
-        String addingTimeList = null;
-        boolean endTime = false;
+        //Setting up variables for use in the loop
+        ZonedDateTime addingTime = startBusinessLocal; //Sets the first time to the local start time.
+        String addingTimeList = null;  //Empty string to be used for adding times to the list.
+        boolean endTime = false; //flag to exit the loop when the end of business has been added to the list.
 
+        //Loops through and increments the available meeting times and adds them to the display list.
         do {
-            addingTimeList = addingTime.format(formatToString);
-            timeList.add(addingTimeList);
+            addingTimeList = addingTime.format(formatToString); //Converts the time to string
+            timeList.add(addingTimeList); //Adds the converted time to the list
 
+            //Adds one hour to the time. This could be adjusted to different increments.
             addingTime = addingTime.plusHours(1);
 
-            if (addingTimeList.equals(endTimeLocal)) {endTime=true;}
+            //If the most recently added time equals the end of business, change the flag to exit the loop.
+            if (addingTimeList.equals(endTimeLocal)) {
+                endTime = true;
+            }
 
 
         } while (!endTime);
 
-
+        //Set the combo boxes to display the time list.
         startTimeCombo.setItems(timeList);
         endTimeCombo.setItems(timeList);
 
+        //Populate the customer combo box from the DB.
         try {
             //Get all the customers from the DB and add them to the result set
             String sql = "SELECT * FROM customers";
@@ -117,12 +124,13 @@ public class addAppointment implements Initializable {
             customerCombo.setItems(customerList);
 
 
-        } catch (Exception e) {
-            System.out.println("There was a problem adding the customer data.");
+        } catch (SQLException e) {
+            displayMessages.errorMsg("Error retrieving data from the customer table.");
+            //System.out.println("There was a problem adding the customer data.");
 
         }
 
-
+        //Populate the contacts combo box from the DB.
         try {
             //Get all the contacts from the DB and add them to the result set
             String sql = "SELECT * FROM contacts";
@@ -142,35 +150,32 @@ public class addAppointment implements Initializable {
             contactCombo.setItems(contactList);
 
 
-        } catch (Exception e) {
-            System.out.println("There was a problem adding the contact data.");
+        } catch (SQLException e) {
+            displayMessages.errorMsg("Error retrieving data from the contact table.");
+            //System.out.println("There was a problem adding the contact data.");
 
         }
     }
 
-    public void clearFormButtonClick(ActionEvent actionEvent) {
-        //idTextBox.setText("");
-        titleTextBox.setText("");
-        descriptionTextBox.setText("");
-        locationTextBox.setText("");
-        typeTextBox.setText("");
-    }
 
-    public void saveButtonClick(ActionEvent actionEvent) throws IOException, SQLException {
+    /**
+     * Performs error checking and then saves the appointment to the database.
+     */
+    public void saveButtonClick(ActionEvent actionEvent) throws IOException {
+        //TODO Entry error checking
 
+
+        //Assign the values entered to variables.
         String apptTitle = titleTextBox.getText();
         String apptDescription = descriptionTextBox.getText();
         String apptLocation = locationTextBox.getText();
-        //String apptType = typeTextBox.getText();
         String apptType = (String) typeComboBox.getSelectionModel().getSelectedItem();
         String currentUser = userInfo.saveUsername; //used for created by and last update by
 
-
-
-
-
+        //Checking the date picker to ensure it isn't blank and the date is in the future or present.
         try {
             LocalDate formDate = datePicker.getValue();
+            //Checks to ensure appointments are not being created in the past.
             if (formDate.compareTo(LocalDate.now()) < 0) {
                 displayMessages.errorMsg("New appointments must be created for today or a future date.");
             }
@@ -178,7 +183,7 @@ public class addAppointment implements Initializable {
             displayMessages.errorMsg("Date cannot be blank. Please pick a date.");
         }
 
-
+        //Get the entered times and date.
         String startTime = (String) startTimeCombo.getSelectionModel().getSelectedItem();
         String endTime = (String) endTimeCombo.getSelectionModel().getSelectedItem();
         LocalDate formDate = datePicker.getValue();
@@ -186,96 +191,97 @@ public class addAppointment implements Initializable {
         //Gets the default time zone to as a ZoneId object
         ZoneId tzName = ZoneId.of(timeZone.timeZoneName());
 
-
+        //Formatter to combine the entered dates and times into a local time format.
         DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_TIME;
-        LocalTime localTimeStart = LocalTime.parse(startTime,formatter);
-        LocalTime localTimeEnd = LocalTime.parse(endTime,formatter);
 
-        ZonedDateTime localStartTime = ZonedDateTime.of(formDate,localTimeStart,tzName);
-        ZonedDateTime localEndTime = ZonedDateTime.of(formDate,localTimeEnd,tzName);
+        //Converts the time strings to a local time object.
+        LocalTime localTimeStart = LocalTime.parse(startTime, formatter);
+        LocalTime localTimeEnd = LocalTime.parse(endTime, formatter);
 
+        //Create a zoned date time object by combining date, local time, and time zone ID
+        ZonedDateTime localStartTime = ZonedDateTime.of(formDate, localTimeStart, tzName);
+        ZonedDateTime localEndTime = ZonedDateTime.of(formDate, localTimeEnd, tzName);
 
+        //Convert the local time to UTC time.
         ZonedDateTime utcStart = localStartTime.withZoneSameInstant(ZoneId.of("UTC"));
         ZonedDateTime utcEnd = localEndTime.withZoneSameInstant(ZoneId.of("UTC"));
 
-        System.out.println("Local " + localStartTime + " UTC " + utcStart);
 
+        //Printing out data for debugging.
+        //TODO delete this when done.
+        System.out.println("Local " + localStartTime + " UTC " + utcStart);
         System.out.println("Local " + localEndTime + " UTC " + utcEnd);
 
+        //Convert the zoned date times in UTC back to local times to save to the database.
         LocalDateTime ldtStart = utcStart.toLocalDateTime();
         LocalDateTime ldtEnd = utcEnd.toLocalDateTime();
 
+        //Get the customer and contact names from the combo boxes.
         String customer = (String) customerCombo.getSelectionModel().getSelectedItem();
         String contact = (String) contactCombo.getSelectionModel().getSelectedItem();
 
+        try {
+            //Query for the Customer ID
+            String sql = "SELECT Customer_ID FROM customers WHERE Customer_Name = ?";
+            DBQuery.setPreparedStatement(DBConnect.getConnection(), sql); //Creating the prepared statement object
+            PreparedStatement ps = DBQuery.getPreparedStatement(); //referencing the prepared statement
+            ps.setString(1, customer);
+            ps.executeQuery(); //Runs the sql query
+            ResultSet customerID_RS = ps.getResultSet(); //Setting the results of the query to a result set
+            customerID_RS.next(); //Moves to the first result in the result set
 
-        //Query for the Customer ID
-        String sql = "SELECT Customer_ID FROM customers WHERE Customer_Name = ?";
-        DBQuery.setPreparedStatement(DBConnect.getConnection(), sql); //Creating the prepared statement object
-        PreparedStatement ps = DBQuery.getPreparedStatement(); //referencing the prepared statement
-        ps.setString(1, customer);
-        ps.executeQuery(); //Runs the sql query
-        ResultSet customerID_RS = ps.getResultSet(); //Setting the results of the query to a result set
-        customerID_RS.next(); //Moves to the first result in the result set
-
-        int customerID = customerID_RS.getInt("Customer_ID");
-
-
-
-        //Query for the User ID - This can be done on initilization?
-        sql = "SELECT User_ID FROM users WHERE User_Name = ?";
-        DBQuery.setPreparedStatement(DBConnect.getConnection(), sql); //Creating the prepared statement object
-        PreparedStatement ps1 = DBQuery.getPreparedStatement(); //referencing the prepared statement
-        ps1.setString(1, currentUser);
-        ps1.executeQuery(); //Runs the sql query
-        ResultSet userID_RS = ps1.getResultSet();
-
-        userID_RS.next();
-
-        int userID = userID_RS.getInt("User_ID");
+            int customerID = customerID_RS.getInt("Customer_ID");
 
 
-        //Query for the Contact ID
-        sql = "SELECT Contact_ID FROM contacts WHERE Contact_Name = ?";
-        DBQuery.setPreparedStatement(DBConnect.getConnection(), sql); //Creating the prepared statement object
-        PreparedStatement ps2 = DBQuery.getPreparedStatement(); //referencing the prepared statement
-        ps2.setString(1, contact);
-        ps2.executeQuery(); //Runs the sql query
-        ResultSet contactID_RS = ps2.getResultSet();
+            //Query for the User ID - This can be done on initilization?
+            sql = "SELECT User_ID FROM users WHERE User_Name = ?";
+            DBQuery.setPreparedStatement(DBConnect.getConnection(), sql); //Creating the prepared statement object
+            PreparedStatement ps1 = DBQuery.getPreparedStatement(); //referencing the prepared statement
+            ps1.setString(1, currentUser);
+            ps1.executeQuery(); //Runs the sql query
+            ResultSet userID_RS = ps1.getResultSet();
 
-        contactID_RS.next();
+            userID_RS.next();
 
-        int contactsID = contactID_RS.getInt("Contact_ID");
-
-
+            int userID = userID_RS.getInt("User_ID");
 
 
+            //Query for the Contact ID
+            sql = "SELECT Contact_ID FROM contacts WHERE Contact_Name = ?";
+            DBQuery.setPreparedStatement(DBConnect.getConnection(), sql); //Creating the prepared statement object
+            PreparedStatement ps2 = DBQuery.getPreparedStatement(); //referencing the prepared statement
+            ps2.setString(1, contact);
+            ps2.executeQuery(); //Runs the sql query
+            ResultSet contactID_RS = ps2.getResultSet();
 
-        //SQL Insert query to insert the appointment into the DB
-        sql = "INSERT INTO appointments (Title, Description, Location, Type, Start, End, Created_By, Last_Updated_By, Customer_ID, User_ID, Contact_ID) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            contactID_RS.next();
 
-        DBQuery.setPreparedStatement(DBConnect.getConnection(), sql); //Creating the prepared statement object
-        PreparedStatement prepState = DBQuery.getPreparedStatement(); //referencing the prepared statement
-
-        prepState.setString(1, apptTitle);
-        prepState.setString(2, apptDescription);
-        prepState.setString(3, apptLocation);
-        prepState.setString(4, apptType);
-
-        prepState.setObject(5, ldtStart);
-        prepState.setObject(6, ldtEnd);
-
-        prepState.setString(7, currentUser);
-        prepState.setString(8, currentUser);
+            int contactsID = contactID_RS.getInt("Contact_ID");
 
 
-        prepState.setInt(9, customerID);
-        prepState.setInt(10, userID);
-        prepState.setInt(11, contactsID);
+            //SQL Insert query to insert the appointment into the DB
+            sql = "INSERT INTO appointments (Title, Description, Location, Type, Start, End, Created_By, Last_Updated_By, Customer_ID, User_ID, Contact_ID) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
-        prepState.execute(); //Runs the sql query
+            DBQuery.setPreparedStatement(DBConnect.getConnection(), sql); //Creating the prepared statement object
+            PreparedStatement prepState = DBQuery.getPreparedStatement(); //referencing the prepared statement
 
+            //Sets the values for the various parameters in the SQL statement.
+            prepState.setString(1, apptTitle);
+            prepState.setString(2, apptDescription);
+            prepState.setString(3, apptLocation);
+            prepState.setString(4, apptType);
+            prepState.setObject(5, ldtStart);
+            prepState.setObject(6, ldtEnd);
+            prepState.setString(7, currentUser);
+            prepState.setString(8, currentUser);
+            prepState.setInt(9, customerID);
+            prepState.setInt(10, userID);
+            prepState.setInt(11, contactsID);
 
+            prepState.execute(); //Runs the sql query
+        } catch (SQLException e) {
+            displayMessages.errorMsg("SQL Exception error encountered!");
+        }
 
 
         //Returns to the home screen after saving the info to the DB

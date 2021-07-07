@@ -9,6 +9,9 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import objects.Appointment;
+import objects.Customer;
+import objects.appointmentTypeReport;
+import objects.apptType;
 import utilities.*;
 
 import java.io.IOException;
@@ -16,10 +19,7 @@ import java.net.URL;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.ResourceBundle;
 
@@ -56,13 +56,21 @@ public class reportsController implements Initializable {
     public Label testLabel;
     public TableView currentMonthTable;
     public TableColumn apptTypeCol1;
+    public TableColumn apptCountCol;
+
+    public TableView testApptView;
+    public TableColumn testApptViewCol;
+    public TableColumn testApptViewCol2;
+    public Label tableHeader;
 
 
     //Setup the observable lists for the combo boxes.
     ObservableList<String> contactList = FXCollections.observableArrayList();
     ObservableList<String> customerList = FXCollections.observableArrayList();
     ObservableList<Appointment> apptList = FXCollections.observableArrayList();
-
+    ObservableList<appointmentTypeReport> apptTypeList = FXCollections.observableArrayList();
+    ObservableList<Month> availableMonths = FXCollections.observableArrayList();
+    ObservableList<apptType> meetingTypes = FXCollections.observableArrayList();
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
@@ -72,6 +80,21 @@ public class reportsController implements Initializable {
         contactPane.setVisible(false);
         customerPane.setVisible(false);
         apptTypePane.setVisible(false);
+
+
+        String ptm = "Project Team Meeting";
+        int count = 0;
+
+        apptType projectTeamMeeting = new apptType(ptm, count);
+
+        meetingTypes.add(projectTeamMeeting);
+        meetingTypes.add(new apptType("Stakeholder Meeting",0));
+        meetingTypes.add(new apptType("Change Control Meeting",0));
+        meetingTypes.add(new apptType("Project Status Meeting",0));
+        meetingTypes.add(new apptType("Project Review Meeting",0));
+        meetingTypes.add(new apptType("Other",0));
+
+
 
 
 
@@ -137,20 +160,91 @@ public class reportsController implements Initializable {
 
 
     public void apptTypeButtonSelect(ActionEvent actionEvent) {
+        //Set the visibility of the panes.
         contactPane.setVisible(false);
-
         customerPane.setVisible(false);
-
         apptTypePane.setVisible(true);
 
 
+        //Get the local date and change the table header label.
         LocalDate rightNow = LocalDate.now();
-        testLabel.setText(String.valueOf(rightNow.getMonth()) + " " + rightNow.getYear());
+        tableHeader.setText(rightNow.getMonth() + " " + rightNow.getYear() + " Appointments");
+
+        //Set the table to display the appointment types and counts from the apptType observable list.
+        testApptView.setItems(meetingTypes);
+        testApptViewCol.setCellValueFactory(new PropertyValueFactory<>("type"));
+        testApptViewCol2.setCellValueFactory(new PropertyValueFactory<>("count"));
+
+        monthComboBox.setItems(availableMonths);
+        apptTypeList.clear();
+
+        //Get the appointments and create the objects
+        try {
+            //Create a query to get all the appointments from the DB
+            String sql = "SELECT * FROM appointments";
+            DBQuery.setPreparedStatement(DBConnect.getConnection(), sql); //Creating the prepared statement object
+            PreparedStatement ps = DBQuery.getPreparedStatement(); //referencing the prepared statement
+
+            ps.executeQuery(); //Runs the sql query
+            ResultSet appointmentRS = ps.getResultSet(); //Setting the results of the query to a result set
 
 
-        currentMonthTable.setItems(meetingTypes.getApptTypes());
+            while (appointmentRS.next()) {
+                int apptID = appointmentRS.getInt("Appointment_ID");
+                String apptTitle = appointmentRS.getString("Title");
+                String apptDescription = appointmentRS.getString("Description");
+                String apptLocation = appointmentRS.getString("Location");
+                String apptType = appointmentRS.getString("Type");
 
-        apptTypeCol1.setCellValueFactory(new PropertyValueFactory<>("apptType"));
+
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
+                LocalDateTime startTime = LocalDateTime.parse(appointmentRS.getString("Start"), formatter);
+                ZonedDateTime apptStart = ZonedDateTime.of(startTime, ZoneId.of("UTC"));
+
+                LocalDateTime endTime = LocalDateTime.parse(appointmentRS.getString("End"), formatter);
+                ZonedDateTime apptEnd = ZonedDateTime.of(endTime, ZoneId.of("UTC"));
+
+
+                ZoneId tz = ZoneId.of(timeZone.timeZoneName());
+
+                ZonedDateTime apptEndlocal = ZonedDateTime.ofInstant(apptEnd.toInstant(), tz);
+
+                appointmentTypeReport temp = new appointmentTypeReport (apptType, apptStart);
+                apptTypeList.add(temp);
+
+                Month apptMonth = apptStart.getMonth();
+
+                if (!availableMonths.contains(apptMonth)) {
+                    availableMonths.add(apptMonth);
+                }
+
+
+
+
+
+
+
+
+/*
+                Appointment temp = new Appointment(apptID, apptTitle, apptDescription, apptLocation, apptType, apptStart,
+                        apptEnd, apptCreator, apptUpdater, apptCustomerID, apptUserID, apptContactID, apptContact);
+                apptList.add(temp);
+*/
+            }
+        }
+        catch (SQLException e){
+            System.out.println("Error getting appointments");
+        }
+
+
+
+
+
+        currentMonthTable.setItems(apptTypeList);
+
+        apptTypeCol1.setCellValueFactory(new PropertyValueFactory<>("type"));
+        apptCountCol.setCellValueFactory(new PropertyValueFactory<>("date"));
 
 
 
@@ -388,5 +482,29 @@ public class reportsController implements Initializable {
 
 
     public void monthComboBoxChange(ActionEvent actionEvent) {
+        //Get the selection from the combo box.
+        Month selectedMonth = (Month) monthComboBox.getSelectionModel().getSelectedItem();
+
+        //Change the table header based on the selection.
+        tableHeader.setText(selectedMonth + " Appointments");
+
+        //Loop to iterate through all the appointment types found
+        for (int i = 0; i < apptTypeList.size(); i++) {
+            //if the type matches then set the count in the appType object to  count + 1
+            if (apptTypeList.get(i).getType().equals("Project Team Meeting")) {
+                meetingTypes.get(0).setCount(meetingTypes.get(0).getCount() + 1);
+            } else if (apptTypeList.get(i).getType().equals("Stakeholder Meeting")) {
+
+            }
+
+
+
+        }
+
+
+
+
+
+
     }
 }

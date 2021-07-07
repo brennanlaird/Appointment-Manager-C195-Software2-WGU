@@ -28,6 +28,7 @@ public class Main extends Application {
         DBConnect.startConnection();
 
         meetingTypes.populateAppointmentTypes();
+        meetingTypes.populatemeetingTypeCombo();
 
 
         launch(args);

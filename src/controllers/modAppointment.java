@@ -46,7 +46,7 @@ public  ComboBox typeComboBox;
     public void initialize(URL url, ResourceBundle resourceBundle) {
         //Sets the label to show the current time zone name.
         tzLabel.setText(timeZone.timeZoneName());
-        typeComboBox.setItems(meetingTypes.getApptTypes());
+        typeComboBox.setItems(meetingTypes.getMeetTypesCombo());
     }
 
     /***/

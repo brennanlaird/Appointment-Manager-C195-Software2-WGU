@@ -26,6 +26,10 @@ import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.ResourceBundle;
 
+/**
+ * The controller for the main screen of the application. Contains controls to access all other forms and a table to
+ * view and filter upcoming appoitnments.
+ */
 public class homeController implements Initializable {
 
     public TableView customerTable;
@@ -54,14 +58,16 @@ public class homeController implements Initializable {
     public Button updateAppointmentButton;
     public Button deleteAppointment;
     public Button exitButton;
+    public Button reportsButton;
 
     public RadioButton viewAllRadio;
     public RadioButton viewWeekRadio;
     public RadioButton viewMonthRadio;
     public ToggleGroup apptFilter;
-    public Button reportsButton;
 
 
+
+    //Setting up observable lists for displaying data.
     ObservableList<Customer> allCustomers = FXCollections.observableArrayList();
     ObservableList<Appointment> allAppointments = FXCollections.observableArrayList();
 
@@ -70,15 +76,16 @@ public class homeController implements Initializable {
     /***/
     public void initialize(URL url, ResourceBundle resourceBundle) {
 
-
+        //Retrieves all the customers from the DB and adds them to the observable list.
         try {
-            //Create a query based on the string variable to get the country ID
+            //Create a query to get the all the customers
             String sql = "SELECT * FROM customers";
             DBQuery.setPreparedStatement(DBConnect.getConnection(), sql); //Creating the prepared statement object
             PreparedStatement ps = DBQuery.getPreparedStatement(); //referencing the prepared statement
             ps.executeQuery(); //Runs the sql query
             ResultSet customerRS = ps.getResultSet(); //Setting the results of the query to a result set
 
+            //Loops through each customer in the result set and creates a customer object.
             while (customerRS.next()) {
                 int customerID = customerRS.getInt("Customer_ID");
                 String customerName = customerRS.getString("Customer_Name");
@@ -91,19 +98,17 @@ public class homeController implements Initializable {
                 String customerDiv = convertID.convertDivision(customerDivID);
                 String customerCountry = convertID.convertCountry(customerDivID);
                 Customer temp = new Customer(customerID, customerName, customerAddress, customerPostCode, customerPhone, customerCreator, customerUpdater, customerDivID, customerDiv, customerCountry);
+                //Add the temporary customer object to the observable list.
                 allCustomers.add(temp);
-
-                //System.out.print("Customer Country: " + convertID.convertCountry(temp.getdivisionID()) + "  ");
-                //System.out.println("Customer Region: " + convertID.convertDivision(temp.getdivisionID()));
-
 
             }
 
-        } catch (Exception SQLException) {
+        } catch (SQLException e) {
+            displayMessages.errorMsg("Error retrieving data. Please check the database connection.");
             System.out.println("Database Error from the customers.");
         }
 
-
+        //Retrieves all the appointments from the database and adds them to the list to display.
         try {
             //Create a query to get all the appointments from the DB
             String sql = "SELECT * FROM appointments";
@@ -117,6 +122,7 @@ public class homeController implements Initializable {
             //Declares a null appointment object to store the information about the next appointment.
             Appointment nextAppt = null;
 
+            //Loops through each appointment in the result set and creates a new appointment object for each one.
             while (appointmentRS.next()) {
                 int apptID = appointmentRS.getInt("Appointment_ID");
                 String apptTitle = appointmentRS.getString("Title");
@@ -124,31 +130,24 @@ public class homeController implements Initializable {
                 String apptLocation = appointmentRS.getString("Location");
                 String apptType = appointmentRS.getString("Type");
 
-
+                //Create a date time formatter to change the UTC time from the DB
                 DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
+                //Get the start time from the result set by parsing the string based on the formatter.
                 LocalDateTime startTime = LocalDateTime.parse(appointmentRS.getString("Start"), formatter);
+
                 ZonedDateTime apptStart = ZonedDateTime.of(startTime, ZoneId.of("UTC"));
 
+                //Create variables to store the appointment end time as a local date time based on the formatter and
+                //as a zoned date time.
                 LocalDateTime endTime = LocalDateTime.parse(appointmentRS.getString("End"), formatter);
                 ZonedDateTime apptEnd = ZonedDateTime.of(endTime, ZoneId.of("UTC"));
 
-
+                //Call the method to get and store the time zone ID of the current user
                 ZoneId tz = ZoneId.of(timeZone.timeZoneName());
 
-                ZonedDateTime apptEndlocal = ZonedDateTime.ofInstant(apptEnd.toInstant(), tz);
+                //ZonedDateTime apptEndlocal = ZonedDateTime.ofInstant(apptEnd.toInstant(), tz);
 
-
-
-
-
-
-                //System.out.println(tz);
-                //System.out.println(apptEnd);
-
-                //apptEnd.ofInstant(apptEnd.toInstant(),tz);
-
-                //System.out.println("After conversion: " + apptEndlocal);
 
                 String apptCreator = appointmentRS.getString("Created_By");
                 String apptUpdater = appointmentRS.getString("Last_Updated_By");
@@ -307,7 +306,7 @@ public class homeController implements Initializable {
     }
 
     /**
-     * Loads the add appointment for when the add appointment button has been clicked.
+     * Loads the add appointment form when the add appointment button has been clicked.
      */
     public void addAppointmentButtonClick(ActionEvent actionEvent) throws IOException {
         Parent root = FXMLLoader.load(addCustomer.class.getResource("/views/addAppointment.fxml"));
