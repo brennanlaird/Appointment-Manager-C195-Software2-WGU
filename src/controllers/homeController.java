@@ -105,7 +105,7 @@ public class homeController implements Initializable {
 
         } catch (SQLException e) {
             displayMessages.errorMsg("Error retrieving data. Please check the database connection.");
-            System.out.println("Database Error from the customers.");
+            //System.out.println("Database Error from the customers.");
         }
 
         //Retrieves all the appointments from the database and adds them to the list to display.
@@ -172,7 +172,10 @@ public class homeController implements Initializable {
 
             }
 
-            displayMessages.apptUpcoming(nextAppt.getId(),minStart);
+            if (!loginFlag.loginCheck) {
+                displayMessages.apptUpcoming(nextAppt.getId(), minStart);
+                loginFlag.loginCheck = true;
+            }
 
 
 

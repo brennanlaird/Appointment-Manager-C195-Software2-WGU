@@ -122,6 +122,8 @@ public class logincontroller implements Initializable {
             //If the login was successful, save the username for later use.
             userInfo.saveUsername = userName;
 
+            //Sets the login flag to false. This enables the 15-minute appointment warning to only display once on login.
+            loginFlag.loginCheck = false;
             //If login was successful, load the main screen
             returnHome.loadHome(actionEvent);
         }
