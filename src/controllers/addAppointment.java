@@ -18,6 +18,7 @@ import java.net.URL;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.SimpleDateFormat;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.ResourceBundle;
@@ -259,33 +260,102 @@ public class addAppointment implements Initializable {
             int contactsID = contactID_RS.getInt("Contact_ID");
 
 
-            //SQL Insert query to insert the appointment into the DB
-            sql = "INSERT INTO appointments (Title, Description, Location, Type, Start, End, Created_By, Last_Updated_By, Customer_ID, User_ID, Contact_ID) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            //Check for overlapping appointments.
+            //TODO - Write code to check for overlapping appointments.
 
+
+            //Get all the appointments and add them to a result set.
+            sql = "SELECT * FROM appointments";
             DBQuery.setPreparedStatement(DBConnect.getConnection(), sql); //Creating the prepared statement object
-            PreparedStatement prepState = DBQuery.getPreparedStatement(); //referencing the prepared statement
+            PreparedStatement ps3 = DBQuery.getPreparedStatement(); //referencing the prepared statement
+            ps3.executeQuery(); //Runs the sql query
+            ResultSet allAppointmentsRS = ps3.getResultSet();
 
-            //Sets the values for the various parameters in the SQL statement.
-            prepState.setString(1, apptTitle);
-            prepState.setString(2, apptDescription);
-            prepState.setString(3, apptLocation);
-            prepState.setString(4, apptType);
-            prepState.setObject(5, ldtStart);
-            prepState.setObject(6, ldtEnd);
-            prepState.setString(7, currentUser);
-            prepState.setString(8, currentUser);
-            prepState.setInt(9, customerID);
-            prepState.setInt(10, userID);
-            prepState.setInt(11, contactsID);
+            //Variable to act as a flag to determine if an overlap was found.
+            boolean overlapFlag = false;
 
-            prepState.execute(); //Runs the sql query
+            while (allAppointmentsRS.next()) {
+
+                //Formatter to parse the string from the DB into date and times.
+                DateTimeFormatter formatFromDB = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
+                //Get the start and end times of the current appointment as strings.
+                String dbStart = allAppointmentsRS.getString("Start");
+                String dbEnd = allAppointmentsRS.getString("End");
+
+                //Convert the strings from the DB to Local Time types.
+                LocalTime dbLocalStart = LocalTime.parse(dbStart, formatFromDB);
+                LocalTime dbLocalEnd = LocalTime.parse(dbEnd, formatFromDB);
+
+                //Convert the strings to local date types.
+                LocalDate dbStartDate = LocalDate.parse(dbStart, formatFromDB);
+                LocalDate dbEndDate = LocalDate.parse(dbEnd, formatFromDB);
+
+                //Create zoneddatetime objects from the time and date from the DB.
+                ZonedDateTime dbZonedStart = ZonedDateTime.of(dbStartDate, dbLocalStart, ZoneId.of("UTC"));
+                ZonedDateTime dbZonedEnd = ZonedDateTime.of(dbEndDate, dbLocalEnd, ZoneId.of("UTC"));
+
+                //If the date and time of the start times match, then raise the overlap flag
+                if (dbZonedStart.equals(utcStart)) {
+                    overlapFlag = true;
+                }
+
+                //If the end date and time are equal, there is an overlap.
+                if (dbZonedEnd.equals(utcEnd)) {
+                    overlapFlag = true;
+                }
+
+                //If the start time is between times of another meeting.
+                if (utcStart.isAfter(dbZonedStart) && utcStart.isBefore(dbZonedEnd)) {
+                    overlapFlag = true;
+                }
+
+                //If the end time falls between another meeting.
+                if (utcEnd.isAfter(dbZonedStart) && utcEnd.isBefore(dbZonedEnd)) {
+                    overlapFlag = true;
+                }
+
+                //Error message if the overlap flag is raised.
+                if (overlapFlag) {
+                    displayMessages.errorMsg("The times entered overlap with another meeting. Please adjust the times and try again.");
+                }
+
+
+            }
+
+
+            //If no time overlap was found, proceed to insert.
+
+            if (!overlapFlag) {
+                //SQL Insert query to insert the appointment into the DB
+                sql = "INSERT INTO appointments (Title, Description, Location, Type, Start, End, Created_By, Last_Updated_By, Customer_ID, User_ID, Contact_ID) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
+                DBQuery.setPreparedStatement(DBConnect.getConnection(), sql); //Creating the prepared statement object
+                PreparedStatement prepState = DBQuery.getPreparedStatement(); //referencing the prepared statement
+
+                //Sets the values for the various parameters in the SQL statement.
+                prepState.setString(1, apptTitle);
+                prepState.setString(2, apptDescription);
+                prepState.setString(3, apptLocation);
+                prepState.setString(4, apptType);
+                prepState.setObject(5, ldtStart);
+                prepState.setObject(6, ldtEnd);
+                prepState.setString(7, currentUser);
+                prepState.setString(8, currentUser);
+                prepState.setInt(9, customerID);
+                prepState.setInt(10, userID);
+                prepState.setInt(11, contactsID);
+
+                prepState.execute(); //Runs the sql query
+
+                //Returns to the home screen after saving the info to the DB
+                returnHome.loadHome(actionEvent);
+            }
         } catch (SQLException e) {
-            displayMessages.errorMsg("SQL Exception error encountered!");
+            displayMessages.errorMsg("SQL Exception error encountered! " + e.getMessage());
         }
 
 
-        //Returns to the home screen after saving the info to the DB
-        returnHome.loadHome(actionEvent);
     }
 
     /**
