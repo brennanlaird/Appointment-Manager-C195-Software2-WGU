@@ -62,6 +62,10 @@ public class reportsController implements Initializable {
     public TableColumn testApptViewCol;
     public TableColumn testApptViewCol2;
     public Label tableHeader;
+    public ComboBox yearCombo;
+
+
+    public static boolean initializeFlag = false;
 
 
     //Setup the observable lists for the combo boxes.
@@ -70,7 +74,8 @@ public class reportsController implements Initializable {
     ObservableList<Appointment> apptList = FXCollections.observableArrayList();
     ObservableList<appointmentTypeReport> apptTypeList = FXCollections.observableArrayList();
     ObservableList<Month> availableMonths = FXCollections.observableArrayList();
-    ObservableList<apptType> meetingTypes = FXCollections.observableArrayList();
+    ObservableList<Year> availableYears = FXCollections.observableArrayList();
+
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
@@ -82,18 +87,10 @@ public class reportsController implements Initializable {
         apptTypePane.setVisible(false);
 
 
-        String ptm = "Project Team Meeting";
-        int count = 0;
+        //Setting the meeting type buckets.
 
-        apptType projectTeamMeeting = new apptType(ptm, count);
-
-        meetingTypes.add(projectTeamMeeting);
-        meetingTypes.add(new apptType("Stakeholder Meeting",0));
-        meetingTypes.add(new apptType("Change Control Meeting",0));
-        meetingTypes.add(new apptType("Project Status Meeting",0));
-        meetingTypes.add(new apptType("Project Review Meeting",0));
-        meetingTypes.add(new apptType("Other",0));
-
+        apptType.meetingTypes.clear();
+        apptType.createTypes();
 
 
 
@@ -146,12 +143,12 @@ public class reportsController implements Initializable {
 
         }
 
-
-
+initializeFlag = true;
     }
 
     /**
      * Calls the return to home method to load the main screen.
+     *
      * @param actionEvent The button click action event.
      */
     public void returnToMainClick(ActionEvent actionEvent) throws IOException {
@@ -168,14 +165,16 @@ public class reportsController implements Initializable {
 
         //Get the local date and change the table header label.
         LocalDate rightNow = LocalDate.now();
-        tableHeader.setText(rightNow.getMonth() + " " + rightNow.getYear() + " Appointments");
+        //tableHeader.setText(rightNow.getMonth() + " " + rightNow.getYear() + " Appointments");
 
         //Set the table to display the appointment types and counts from the apptType observable list.
-        testApptView.setItems(meetingTypes);
+        testApptView.setItems(apptType.meetingTypes);
         testApptViewCol.setCellValueFactory(new PropertyValueFactory<>("type"));
         testApptViewCol2.setCellValueFactory(new PropertyValueFactory<>("count"));
 
         monthComboBox.setItems(availableMonths);
+        yearCombo.setItems(availableYears);
+
         apptTypeList.clear();
 
         //Get the appointments and create the objects
@@ -210,13 +209,18 @@ public class reportsController implements Initializable {
 
                 ZonedDateTime apptEndlocal = ZonedDateTime.ofInstant(apptEnd.toInstant(), tz);
 
-                appointmentTypeReport temp = new appointmentTypeReport (apptType, apptStart);
+                appointmentTypeReport temp = new appointmentTypeReport(apptType, apptStart);
                 apptTypeList.add(temp);
 
                 Month apptMonth = apptStart.getMonth();
+                Year apptYear = Year.of(apptStart.getYear());
 
                 if (!availableMonths.contains(apptMonth)) {
                     availableMonths.add(apptMonth);
+                }
+
+                if (!availableYears.contains(apptYear)) {
+                    availableYears.add(apptYear);
                 }
 
 
@@ -232,21 +236,18 @@ public class reportsController implements Initializable {
                 apptList.add(temp);
 */
             }
-        }
-        catch (SQLException e){
+            //TODO Fix null pointer exception
+            monthComboBox.getSelectionModel().selectFirst();
+            yearCombo.getSelectionModel().selectFirst();
+        } catch (SQLException e) {
             System.out.println("Error getting appointments");
         }
-
-
-
 
 
         currentMonthTable.setItems(apptTypeList);
 
         apptTypeCol1.setCellValueFactory(new PropertyValueFactory<>("type"));
         apptCountCol.setCellValueFactory(new PropertyValueFactory<>("date"));
-
-
 
 
     }
@@ -272,7 +273,7 @@ public class reportsController implements Initializable {
 
         int contactsID = 0;
 
-                //Clear the appointment list to prevent stray appointments from appearing.
+        //Clear the appointment list to prevent stray appointments from appearing.
         apptList.clear();
 
 
@@ -351,10 +352,9 @@ public class reportsController implements Initializable {
                 apptList.add(temp);
 
             }
+        } catch (SQLException e) {
+            System.out.println("Error getting appointments");
         }
-            catch (SQLException e){
-                System.out.println("Error getting appointments");
-            }
         //Display the list in the table
 
         contactTable.setItems(apptList);
@@ -367,8 +367,6 @@ public class reportsController implements Initializable {
         apptStartCol.setCellValueFactory(new PropertyValueFactory<>("startTime"));
         apptEndCol.setCellValueFactory(new PropertyValueFactory<>("endTime"));
         customerIDCol.setCellValueFactory(new PropertyValueFactory<>("customerID"));
-
-
 
 
     }
@@ -458,8 +456,7 @@ public class reportsController implements Initializable {
                 apptList.add(temp);
 
             }
-        }
-        catch (SQLException e){
+        } catch (SQLException e) {
             System.out.println("Error getting appointments");
         }
 
@@ -476,35 +473,112 @@ public class reportsController implements Initializable {
         contactIDColCustomer.setCellValueFactory(new PropertyValueFactory<>("customerID"));
 
 
-
-
     }
 
 
     public void monthComboBoxChange(ActionEvent actionEvent) {
-        //Get the selection from the combo box.
+        //Get the selections from the combo boxes.
         Month selectedMonth = (Month) monthComboBox.getSelectionModel().getSelectedItem();
+        Year selectedYear = (Year) yearCombo.getSelectionModel().getSelectedItem();
+
+        //Pass the selections to the method that updates the table.
+        updateTypeTable(selectedMonth, selectedYear);
+
+
+    }
+
+    public void yearComboChange(ActionEvent actionEvent) {
+
+        if (initializeFlag) {
+            //Get the selections from the combo boxes.
+            Month selectedMonth = (Month) monthComboBox.getSelectionModel().getSelectedItem();
+            Year selectedYear = (Year) yearCombo.getSelectionModel().getSelectedItem();
+
+            //Pass the selections to the method that updates the table.
+            updateTypeTable(selectedMonth, selectedYear);
+        }
+    }
+
+    public void updateTypeTable(Month month, Year year) {
+
+
+
 
         //Change the table header based on the selection.
-        tableHeader.setText(selectedMonth + " Appointments");
+        tableHeader.setText(month + " " + year + " Appointments");
+
+        int c0 = apptType.meetingTypes.get(0).getCount();
+        int c1 = apptType.meetingTypes.get(1).getCount();
+        int c2 = apptType.meetingTypes.get(2).getCount();
+        int c3 = apptType.meetingTypes.get(3).getCount();
+        int c4 = apptType.meetingTypes.get(4).getCount();
+        int c5 = apptType.meetingTypes.get(5).getCount();
+
+        System.out.println("Before reset " + c0 + " " + c1 + " " + c2 + " " + c3 + " " + c4 + " " + c5);
+
+
+        apptType.resetCounts();
+        c0 = apptType.meetingTypes.get(0).getCount();
+        c1 = apptType.meetingTypes.get(1).getCount();
+        c2 = apptType.meetingTypes.get(2).getCount();
+        c3 = apptType.meetingTypes.get(3).getCount();
+        c4 = apptType.meetingTypes.get(4).getCount();
+        c5 = apptType.meetingTypes.get(5).getCount();
+        System.out.println("After reset " + c0 + " " + c1 + " " + c2 + " " + c3 + " " + c4 + " " + c5);
 
         //Loop to iterate through all the appointment types found
         for (int i = 0; i < apptTypeList.size(); i++) {
             //if the type matches then set the count in the appType object to  count + 1
-            if (apptTypeList.get(i).getType().equals("Project Team Meeting")) {
-                meetingTypes.get(0).setCount(meetingTypes.get(0).getCount() + 1);
-            } else if (apptTypeList.get(i).getType().equals("Stakeholder Meeting")) {
+
+            //System.out.println(apptTypeList.get(i).getType());
+
+            Month apptMonth = apptTypeList.get(i).getDate().getMonth();
+
+            Year apptYear = Year.of(apptTypeList.get(i).getDate().getYear());
+
+
+            //System.out.println("Selected Month: " + selectedMonth + " Appointment Month: " + apptMonth + " Type: " + apptTypeList.get(i).getType());
+
+
+
+
+
+
+            if (month.equals(apptMonth) && year.equals(apptYear)) {
+                System.out.println("Selected Month: " + month + " Appointment Month: " + apptMonth + " Type: " + apptTypeList.get(i).getType());
+
+                if (apptTypeList.get(i).getType().equals("Project Team Meeting")) {
+                    c0++;
+                    apptType.meetingTypes.get(0).setCount(apptType.meetingTypes.get(0).getCount() + 1);
+                } else if (apptTypeList.get(i).getType().equals("Stakeholder Meeting")) {
+                    c1++;
+                    apptType.meetingTypes.get(1).setCount(c1);
+                } else if (apptTypeList.get(i).getType().equals("Change Control Meeting")) {
+                    apptType.meetingTypes.get(2).setCount(apptType.meetingTypes.get(2).getCount() + 1);
+                } else if (apptTypeList.get(i).getType().equals("Project Status Meeting")) {
+                    apptType.meetingTypes.get(3).setCount(apptType.meetingTypes.get(3).getCount() + 1);
+                } else if (apptTypeList.get(i).getType().equals("Project Review Meeting")) {
+                    apptType.meetingTypes.get(4).setCount(apptType.meetingTypes.get(4).getCount() + 1);
+                } else {
+                    apptType.meetingTypes.get(5).setCount(apptType.meetingTypes.get(5).getCount() + 1);
+                }
 
             }
 
 
-
         }
+        testApptView.refresh();
 
 
-
-
-
-
+        c0 = apptType.meetingTypes.get(0).getCount();
+        c1 = apptType.meetingTypes.get(1).getCount();
+        c2 = apptType.meetingTypes.get(2).getCount();
+        c3 = apptType.meetingTypes.get(3).getCount();
+        c4 = apptType.meetingTypes.get(4).getCount();
+        c5 = apptType.meetingTypes.get(5).getCount();
+        System.out.println("After loop " + c0 + " " + c1 + " " + c2 + " " + c3 + " " + c4 + " " + c5);
     }
+
+
+
 }

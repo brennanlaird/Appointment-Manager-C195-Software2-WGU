@@ -261,8 +261,6 @@ public class addAppointment implements Initializable {
 
 
             //Check for overlapping appointments.
-            //TODO - Write code to check for overlapping appointments.
-
 
             //Get all the appointments and add them to a result set.
             sql = "SELECT * FROM appointments";
@@ -317,7 +315,7 @@ public class addAppointment implements Initializable {
 
                 //Error message if the overlap flag is raised.
                 if (overlapFlag) {
-                    displayMessages.errorMsg("The times entered overlap with another meeting. Please adjust the times and try again.");
+                    displayMessages.errorMsg("The times entered overlaps with another meeting. Please adjust the times and try again.");
                 }
 
 

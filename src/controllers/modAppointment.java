@@ -34,7 +34,7 @@ public class modAppointment implements Initializable {
 
     public Label tzLabel;
 
-public  ComboBox typeComboBox;
+    public ComboBox typeComboBox;
 
     public ComboBox customerCombo;
     public ComboBox contactCombo;
@@ -189,9 +189,8 @@ public  ComboBox typeComboBox;
         System.out.println(startTimeCombo.getSelectionModel().getSelectedItem());
 
 
-
         String startTime = startTimeCombo.getSelectionModel().getSelectedItem().toString();
-        String endTime =  endTimeCombo.getSelectionModel().getSelectedItem().toString();
+        String endTime = endTimeCombo.getSelectionModel().getSelectedItem().toString();
         LocalDate formDate = datePicker.getValue();
 
         //Gets the default time zone to as a ZoneId object
@@ -199,11 +198,11 @@ public  ComboBox typeComboBox;
 
 
         DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_TIME;
-        LocalTime localTimeStart = LocalTime.parse(startTime,formatter);
-        LocalTime localTimeEnd = LocalTime.parse(endTime,formatter);
+        LocalTime localTimeStart = LocalTime.parse(startTime, formatter);
+        LocalTime localTimeEnd = LocalTime.parse(endTime, formatter);
 
-        ZonedDateTime localStartTime = ZonedDateTime.of(formDate,localTimeStart,tzName);
-        ZonedDateTime localEndTime = ZonedDateTime.of(formDate,localTimeEnd,tzName);
+        ZonedDateTime localStartTime = ZonedDateTime.of(formDate, localTimeStart, tzName);
+        ZonedDateTime localEndTime = ZonedDateTime.of(formDate, localTimeEnd, tzName);
 
 
         ZonedDateTime utcStart = localStartTime.withZoneSameInstant(ZoneId.of("UTC"));
@@ -232,7 +231,6 @@ public  ComboBox typeComboBox;
         int customerID = customerID_RS.getInt("Customer_ID");
 
 
-
         //Query for the User ID - This can be done on initilization?
         sql = "SELECT User_ID FROM users WHERE User_Name = ?";
         DBQuery.setPreparedStatement(DBConnect.getConnection(), sql); //Creating the prepared statement object
@@ -259,38 +257,98 @@ public  ComboBox typeComboBox;
         int contactsID = contactID_RS.getInt("Contact_ID");
 
 
+        //Check for overlapping appointments.
+
+        //Get all the appointments and add them to a result set.
+        sql = "SELECT * FROM appointments";
+        DBQuery.setPreparedStatement(DBConnect.getConnection(), sql); //Creating the prepared statement object
+        PreparedStatement ps3 = DBQuery.getPreparedStatement(); //referencing the prepared statement
+        ps3.executeQuery(); //Runs the sql query
+        ResultSet allAppointmentsRS = ps3.getResultSet();
+
+        //Variable to act as a flag to determine if an overlap was found.
+        boolean overlapFlag = false;
+
+        while (allAppointmentsRS.next()) {
+
+            //Formatter to parse the string from the DB into date and times.
+            DateTimeFormatter formatFromDB = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
+            //Get the start and end times of the current appointment as strings.
+            String dbStart = allAppointmentsRS.getString("Start");
+            String dbEnd = allAppointmentsRS.getString("End");
+
+            //Convert the strings from the DB to Local Time types.
+            LocalTime dbLocalStart = LocalTime.parse(dbStart, formatFromDB);
+            LocalTime dbLocalEnd = LocalTime.parse(dbEnd, formatFromDB);
+
+            //Convert the strings to local date types.
+            LocalDate dbStartDate = LocalDate.parse(dbStart, formatFromDB);
+            LocalDate dbEndDate = LocalDate.parse(dbEnd, formatFromDB);
+
+            //Create zoneddatetime objects from the time and date from the DB.
+            ZonedDateTime dbZonedStart = ZonedDateTime.of(dbStartDate, dbLocalStart, ZoneId.of("UTC"));
+            ZonedDateTime dbZonedEnd = ZonedDateTime.of(dbEndDate, dbLocalEnd, ZoneId.of("UTC"));
+
+            //If the date and time of the start times match, then raise the overlap flag
+            if (dbZonedStart.equals(utcStart)) {
+                overlapFlag = true;
+            }
+
+            //If the end date and time are equal, there is an overlap.
+            if (dbZonedEnd.equals(utcEnd)) {
+                overlapFlag = true;
+            }
+
+            //If the start time is between times of another meeting.
+            if (utcStart.isAfter(dbZonedStart) && utcStart.isBefore(dbZonedEnd)) {
+                overlapFlag = true;
+            }
+
+            //If the end time falls between another meeting.
+            if (utcEnd.isAfter(dbZonedStart) && utcEnd.isBefore(dbZonedEnd)) {
+                overlapFlag = true;
+            }
+
+            //Error message if the overlap flag is raised.
+            if (overlapFlag) {
+                displayMessages.errorMsg("The times entered overlaps with another meeting. Please adjust the times and try again.");
+            }
 
 
+        }
 
-        String updateApptSQL = "UPDATE appointments  " +
-                "SET Title = ?, Description = ?, Location = ?, Type = ?, Start = ?, End = ?,  Last_Updated_By = ?, " +
-                "Customer_ID = ?, User_ID = ?, Contact_ID = ? " +
-                "WHERE Appointment_ID = ?";
+        if (!overlapFlag) {
+            String updateApptSQL = "UPDATE appointments  " +
+                    "SET Title = ?, Description = ?, Location = ?, Type = ?, Start = ?, End = ?,  Last_Updated_By = ?, " +
+                    "Customer_ID = ?, User_ID = ?, Contact_ID = ? " +
+                    "WHERE Appointment_ID = ?";
 
-        DBQuery.setPreparedStatement(DBConnect.getConnection(), updateApptSQL); //Creating the prepared statement object
-        PreparedStatement prepState = DBQuery.getPreparedStatement(); //referencing the prepared statement
+            DBQuery.setPreparedStatement(DBConnect.getConnection(), updateApptSQL); //Creating the prepared statement object
+            PreparedStatement prepState = DBQuery.getPreparedStatement(); //referencing the prepared statement
 
-        prepState.setString(1, apptTitle);
-        prepState.setString(2, apptDescription);
-        prepState.setString(3, apptLocation);
-        prepState.setString(4, apptType);
+            prepState.setString(1, apptTitle);
+            prepState.setString(2, apptDescription);
+            prepState.setString(3, apptLocation);
+            prepState.setString(4, apptType);
 
-        prepState.setObject(5, ldtStart);
-        prepState.setObject(6, ldtEnd);
+            prepState.setObject(5, ldtStart);
+            prepState.setObject(6, ldtEnd);
 
-        prepState.setString(7, currentUser);
+            prepState.setString(7, currentUser);
 
-        prepState.setInt(8, customerID);
-        prepState.setInt(9, userID);
-        prepState.setInt(10, contactsID);
+            prepState.setInt(8, customerID);
+            prepState.setInt(9, userID);
+            prepState.setInt(10, contactsID);
 
-        prepState.setInt(11, apptID);
-
-
-        prepState.executeUpdate(); //Executes the update query
+            prepState.setInt(11, apptID);
 
 
-        returnHome.loadHome(actionEvent);
+            prepState.executeUpdate(); //Executes the update query
+
+
+            returnHome.loadHome(actionEvent);
+        }
     }
 
     public void cancelButtonClick(ActionEvent actionEvent) throws IOException {
