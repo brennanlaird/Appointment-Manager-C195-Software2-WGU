@@ -93,8 +93,6 @@ public class reportsController implements Initializable {
         apptType.createTypes();
 
 
-
-
         try {
             //Get all the contacts from the DB and add them to the result set
             String sql = "SELECT * FROM contacts";
@@ -143,7 +141,7 @@ public class reportsController implements Initializable {
 
         }
 
-initializeFlag = true;
+        initializeFlag = true;
     }
 
     /**
@@ -209,6 +207,7 @@ initializeFlag = true;
 
                 ZonedDateTime apptEndlocal = ZonedDateTime.ofInstant(apptEnd.toInstant(), tz);
 
+                //TODO - Is this helpful? could potentially get rid of TypeReport class?
                 appointmentTypeReport temp = new appointmentTypeReport(apptType, apptStart);
                 apptTypeList.add(temp);
 
@@ -236,9 +235,12 @@ initializeFlag = true;
                 apptList.add(temp);
 */
             }
+
             //TODO Fix null pointer exception
-            monthComboBox.getSelectionModel().selectFirst();
-            yearCombo.getSelectionModel().selectFirst();
+            monthComboBox.getSelectionModel().select(0);
+            yearCombo.getSelectionModel().select(0);
+
+
         } catch (SQLException e) {
             System.out.println("Error getting appointments");
         }
@@ -249,7 +251,7 @@ initializeFlag = true;
         apptTypeCol1.setCellValueFactory(new PropertyValueFactory<>("type"));
         apptCountCol.setCellValueFactory(new PropertyValueFactory<>("date"));
 
-
+        initializeFlag = true;
     }
 
     public void contactScheduleButton(ActionEvent actionEvent) {
@@ -477,6 +479,23 @@ initializeFlag = true;
 
 
     public void monthComboBoxChange(ActionEvent actionEvent) {
+
+
+        //Get the selections from the combo boxes.
+        Month selectedMonth = (Month) monthComboBox.getSelectionModel().getSelectedItem();
+        Year selectedYear = (Year) yearCombo.getSelectionModel().getSelectedItem();
+
+        //Pass the selections to the method that updates the table.
+
+        if (selectedYear == null || selectedMonth == null) {
+            updateTypeTable(Month.JANUARY, Year.now());
+        } else {
+
+            updateTypeTable(selectedMonth, selectedYear);
+        }
+    }
+
+    public void yearComboChange(ActionEvent actionEvent) {
         //Get the selections from the combo boxes.
         Month selectedMonth = (Month) monthComboBox.getSelectionModel().getSelectedItem();
         Year selectedYear = (Year) yearCombo.getSelectionModel().getSelectedItem();
@@ -484,24 +503,9 @@ initializeFlag = true;
         //Pass the selections to the method that updates the table.
         updateTypeTable(selectedMonth, selectedYear);
 
-
-    }
-
-    public void yearComboChange(ActionEvent actionEvent) {
-
-        if (initializeFlag) {
-            //Get the selections from the combo boxes.
-            Month selectedMonth = (Month) monthComboBox.getSelectionModel().getSelectedItem();
-            Year selectedYear = (Year) yearCombo.getSelectionModel().getSelectedItem();
-
-            //Pass the selections to the method that updates the table.
-            updateTypeTable(selectedMonth, selectedYear);
-        }
     }
 
     public void updateTypeTable(Month month, Year year) {
-
-
 
 
         //Change the table header based on the selection.
@@ -540,10 +544,6 @@ initializeFlag = true;
             //System.out.println("Selected Month: " + selectedMonth + " Appointment Month: " + apptMonth + " Type: " + apptTypeList.get(i).getType());
 
 
-
-
-
-
             if (month.equals(apptMonth) && year.equals(apptYear)) {
                 System.out.println("Selected Month: " + month + " Appointment Month: " + apptMonth + " Type: " + apptTypeList.get(i).getType());
 
@@ -578,7 +578,6 @@ initializeFlag = true;
         c5 = apptType.meetingTypes.get(5).getCount();
         System.out.println("After loop " + c0 + " " + c1 + " " + c2 + " " + c3 + " " + c4 + " " + c5);
     }
-
 
 
 }

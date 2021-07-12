@@ -145,18 +145,34 @@ public class Customer {
         this.divisionID = divisionID;
     }
 
+    /**
+     *
+     * @return The division name.
+     */
     public String getDivision() {
         return division;
     }
 
+    /**
+     *
+     * @param division the division name to set.
+     */
     public void setDivision(String division) {
         this.division = division;
     }
 
+    /**
+     *
+     * @return The country string.
+     */
     public String getCountry() {
         return country;
     }
 
+    /**
+     *
+     * @param country The country name to set.
+     */
     public void setCountry(String country) {
         this.country = country;
     }

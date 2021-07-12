@@ -290,37 +290,46 @@ public class modAppointment implements Initializable {
             ZonedDateTime dbZonedStart = ZonedDateTime.of(dbStartDate, dbLocalStart, ZoneId.of("UTC"));
             ZonedDateTime dbZonedEnd = ZonedDateTime.of(dbEndDate, dbLocalEnd, ZoneId.of("UTC"));
 
-            //If the date and time of the start times match, then raise the overlap flag
-            if (dbZonedStart.equals(utcStart)) {
-                overlapFlag = true;
+            if (apptID != allAppointmentsRS.getInt("Appointment_ID")) {
+
+                //If the date and time of the start times match, then raise the overlap flag
+                if (dbZonedStart.equals(utcStart)) {
+                    overlapFlag = true;
+                }
+
+                //If the end date and time are equal, there is an overlap.
+                if (dbZonedEnd.equals(utcEnd)) {
+                    overlapFlag = true;
+                }
+
+                //If the start time is between times of another meeting.
+                if (utcStart.isAfter(dbZonedStart) && utcStart.isBefore(dbZonedEnd)) {
+                    overlapFlag = true;
+                }
+
+                //If the end time falls between another meeting.
+                if (utcEnd.isAfter(dbZonedStart) && utcEnd.isBefore(dbZonedEnd)) {
+                    overlapFlag = true;
+                }
+
+                //Error message if the overlap flag is raised.
+                if (overlapFlag) {
+                    displayMessages.errorMsg("The times entered overlaps with another meeting. Please adjust the times and try again.");
+                }
+
             }
-
-            //If the end date and time are equal, there is an overlap.
-            if (dbZonedEnd.equals(utcEnd)) {
-                overlapFlag = true;
-            }
-
-            //If the start time is between times of another meeting.
-            if (utcStart.isAfter(dbZonedStart) && utcStart.isBefore(dbZonedEnd)) {
-                overlapFlag = true;
-            }
-
-            //If the end time falls between another meeting.
-            if (utcEnd.isAfter(dbZonedStart) && utcEnd.isBefore(dbZonedEnd)) {
-                overlapFlag = true;
-            }
-
-            //Error message if the overlap flag is raised.
-            if (overlapFlag) {
-                displayMessages.errorMsg("The times entered overlaps with another meeting. Please adjust the times and try again.");
-            }
-
-
         }
+
+
+        //Creates a local date time to be passed to the database to show the last update time.
+        ZonedDateTime rn = ZonedDateTime.of(LocalDateTime.now(), tzName); //Current time in the users time zone.
+        rn = rn.withZoneSameInstant(ZoneId.of("UTC")); //Convert user time to UTC
+        LocalDateTime rightNow = rn.toLocalDateTime(); //Convert UTC zoned object to local time object for passing to DB
+
 
         if (!overlapFlag) {
             String updateApptSQL = "UPDATE appointments  " +
-                    "SET Title = ?, Description = ?, Location = ?, Type = ?, Start = ?, End = ?,  Last_Updated_By = ?, " +
+                    "SET Title = ?, Description = ?, Location = ?, Type = ?, Start = ?, End = ?, Last_Update = ?,  Last_Updated_By = ?, " +
                     "Customer_ID = ?, User_ID = ?, Contact_ID = ? " +
                     "WHERE Appointment_ID = ?";
 
@@ -335,13 +344,14 @@ public class modAppointment implements Initializable {
             prepState.setObject(5, ldtStart);
             prepState.setObject(6, ldtEnd);
 
-            prepState.setString(7, currentUser);
+            prepState.setObject(7, rightNow);
+            prepState.setString(8, currentUser);
 
-            prepState.setInt(8, customerID);
-            prepState.setInt(9, userID);
-            prepState.setInt(10, contactsID);
+            prepState.setInt(9, customerID);
+            prepState.setInt(10, userID);
+            prepState.setInt(11, contactsID);
 
-            prepState.setInt(11, apptID);
+            prepState.setInt(12, apptID);
 
 
             prepState.executeUpdate(); //Executes the update query

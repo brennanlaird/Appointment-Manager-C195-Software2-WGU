@@ -27,7 +27,7 @@ public class Main extends Application {
         //Starts the connection to the mysql DB
         DBConnect.startConnection();
 
-        meetingTypes.populateAppointmentTypes();
+        //meetingTypes.populateAppointmentTypes();
         meetingTypes.populatemeetingTypeCombo();
 
 

@@ -13,15 +13,15 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 import objects.Customer;
-import utilities.DBConnect;
-import utilities.DBQuery;
-import utilities.returnHome;
-import utilities.userInfo;
+import utilities.*;
 
 import java.io.IOException;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 
 public class modCustomerController {
     public TextField idTextBox;
@@ -43,7 +43,7 @@ public class modCustomerController {
     public Label countryLabel;
     public Label phoneLabel;
 
-    public void receiveCustomer(Customer selectedItem) {
+    public void receiveCustomer(Customer selectedItem) throws SQLException {
         //Sets the text boxes to contain the information from the Customer object passed in from the main form.
         idTextBox.setText(String.valueOf(selectedItem.getId()));
         customerNameBox.setText(String.valueOf(selectedItem.getName()));
@@ -117,6 +117,7 @@ public class modCustomerController {
             String divisionID = countryID_RS.getString("Division");
 
 
+
             sql = "SELECT Country FROM countries WHERE Country_ID=?";
 
             DBQuery.setPreparedStatement(DBConnect.getConnection(), sql); //Creating the prepared statement object
@@ -132,14 +133,15 @@ public class modCustomerController {
             //System.out.println(divisionID + ", " + countryName);
 
             countryCombo.setValue(countryName);
-            firstLevelCombo.setValue(divisionID);
+            countryComboChange();
 
             firstLevelCombo.setDisable(false);
             firstLevelLabel.setDisable(false);
-
+            firstLevelCombo.setValue(divisionID);
         } catch (Exception e) {
             System.out.println("There was a problem getting the country name.");
         }
+
 
 
     }
@@ -160,7 +162,7 @@ public class modCustomerController {
      * Changes the label for the first level division based on the user selection in the country combo box
      * and then populates the first level division combo box.
      */
-    public void countryComboChange(ActionEvent actionEvent) throws SQLException {
+    public void countryComboChange() throws SQLException {
 
         //Activates the first level combo and label when a country is selected.
         firstLevelLabel.setDisable(false);
@@ -255,8 +257,13 @@ public class modCustomerController {
 
             String currentUser = userInfo.saveUsername;
 
+            //Creates a local date time to be passed to the database to show the last update time.
+            ZonedDateTime rn = ZonedDateTime.of(LocalDateTime.now(), ZoneId.of(timeZone.timeZoneName())); //Current time in the users time zone.
+            rn = rn.withZoneSameInstant(ZoneId.of("UTC")); //Convert user time to UTC
+            LocalDateTime rightNow = rn.toLocalDateTime(); //Convert UTC zoned object to local time object for passing to DB
+
             String insertCustomerSQL = "UPDATE customers  " +
-                    "SET Customer_Name = ?, Address = ?, Postal_Code = ?, Phone = ?,  Last_Updated_By = ?, Division_ID = ? " +
+                    "SET Customer_Name = ?, Address = ?, Postal_Code = ?, Phone = ?, Last_Update = ?,  Last_Updated_By = ?, Division_ID = ? " +
                     "WHERE Customer_ID = ?";
 
             DBQuery.setPreparedStatement(DBConnect.getConnection(), insertCustomerSQL); //Creating the prepared statement object
@@ -266,9 +273,10 @@ public class modCustomerController {
             prepState.setString(2, customerAddress);
             prepState.setString(3, customerPostCode);
             prepState.setString(4, customerPhone);
-            prepState.setString(5, currentUser);
-            prepState.setInt(6, divId);
-            prepState.setInt(7, customerID);
+            prepState.setObject(5, rightNow);
+            prepState.setString(6, currentUser);
+            prepState.setInt(7, divId);
+            prepState.setInt(8, customerID);
 
 
 

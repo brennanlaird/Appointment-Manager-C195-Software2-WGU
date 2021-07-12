@@ -3,14 +3,10 @@ package controllers;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
-import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
-import javafx.scene.Node;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
-import javafx.stage.Stage;
+import objects.apptType;
 import utilities.*;
 
 import java.io.IOException;
@@ -18,28 +14,23 @@ import java.net.URL;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.text.SimpleDateFormat;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.ResourceBundle;
-import java.util.TimeZone;
 
 public class addAppointment implements Initializable {
     public TextField idTextBox;
     public TextField titleTextBox;
     public TextField descriptionTextBox;
     public TextField locationTextBox;
-    public TextField typeTextBox;
 
     public HBox datePick;
     public DatePicker datePicker;
-
 
     public Button saveButton;
     public Button cancelButton;
 
     public Label tzLabel;
-
 
     public ComboBox customerCombo;
     public ComboBox contactCombo;
@@ -49,7 +40,7 @@ public class addAppointment implements Initializable {
 
 
     /**
-     * Sets up the combo boxes and the spinner boxes for the add appointment form.
+     * Sets up the user interface for the add appointment form.
      */
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
@@ -63,8 +54,11 @@ public class addAppointment implements Initializable {
         //Sets the time zone label to display the name of the users current time zone.
         tzLabel.setText(timeZone.timeZoneName());
 
+        //TODO - Can this be done with only the apptTypes object rather than from the meeting types utility?
         //Sets the combobox to display the available meeting types.
         typeComboBox.setItems(meetingTypes.getMeetTypesCombo());
+        //apptType.createTypes();
+        //typeComboBox.setItems(apptType.meetingTypes);
 
         //Gets the default time zone to as a ZoneId object
         ZoneId tzName = ZoneId.of(timeZone.timeZoneName());
@@ -98,7 +92,6 @@ public class addAppointment implements Initializable {
                 endTime = true;
             }
 
-
         } while (!endTime);
 
         //Set the combo boxes to display the time list.
@@ -120,15 +113,12 @@ public class addAppointment implements Initializable {
                 customerList.add(temp);
             }
 
-
             //Sets the items to display in the country combo box
             customerCombo.setItems(customerList);
 
 
         } catch (SQLException e) {
             displayMessages.errorMsg("Error retrieving data from the customer table.");
-            //System.out.println("There was a problem adding the customer data.");
-
         }
 
         //Populate the contacts combo box from the DB.
@@ -146,15 +136,12 @@ public class addAppointment implements Initializable {
                 contactList.add(temp);
             }
 
-
             //Sets the items to display in the country combo box
             contactCombo.setItems(contactList);
 
 
         } catch (SQLException e) {
             displayMessages.errorMsg("Error retrieving data from the contact table.");
-            //System.out.println("There was a problem adding the contact data.");
-
         }
     }
 

@@ -2,8 +2,10 @@ package utilities;
 
 import java.sql.*;
 
-/**This class is used to manage the connection to the database. The initial variables are static and used to build the
- * connection string. */
+/**
+ * This class is used to manage the connection to the database. The initial variables are static and used to build the
+ * connection string.
+ */
 public class DBConnect {
     //JDBC URL Parts
     //Protocol for DB connection
@@ -26,7 +28,7 @@ public class DBConnect {
 
     //Driver Interface Reference
     private static final String jdbcDriver = "com.mysql.jdbc.Driver";
-    private static  Connection dbConnect = null;
+    private static Connection dbConnect = null;
 
     //DB Username
     private static final String dbUser = "U08AMo";
@@ -36,15 +38,15 @@ public class DBConnect {
 
     /**
      * Opens a connection to the database.
+     *
      * @return The connection to the database.
      */
-    public static Connection startConnection()  {
+    public static Connection startConnection() {
         //Try catch will catch a sql error and display an error message with the error code.
         try {
             //Sets up the connection object using the static variables defined in the class.
             dbConnect = DriverManager.getConnection(jdbcURL, dbUser, dbPass);
-        }
-        catch (SQLException sqlException) {
+        } catch (SQLException sqlException) {
             displayMessages.errorMsg("Database error " + sqlException.getErrorCode());
         }
         //System.out.println("Connection successful.");
@@ -53,24 +55,24 @@ public class DBConnect {
 
     /**
      * Returns the open connection so the connection does not have to be opened each time.
+     *
      * @return The connection to the database.
      */
-    public static Connection getConnection(){
+    public static Connection getConnection() {
         return dbConnect;
     }
 
     /**
      * Closes the connection to the database.
      */
-    public static void closeConnection()  {
+    public static void closeConnection() {
         try {
             dbConnect.close();
-        }
-        catch (Exception e){
+        } catch (Exception e) {
             //Ignore the catch, this method is only called on program exit.
         }
 
-        //System.out.println("Connection closed.");
+
     }
 
 
