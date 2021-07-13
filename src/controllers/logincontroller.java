@@ -47,7 +47,7 @@ public class logincontroller implements Initializable {
         //String variable to store the users language setting.
         String userLang = Locale.getDefault().getLanguage();
 
-        //if the language is french then change the all the labels.
+        //if the language is french then change all the labels.
         if (userLang.equals("fr")) {
             exitButton.setText("Sortir");
             loginButton.setText("Connexion");

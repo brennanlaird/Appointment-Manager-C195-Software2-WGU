@@ -18,6 +18,9 @@ import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.ResourceBundle;
 
+/**
+ * This class controls the adding of appointments to the database.
+ */
 public class addAppointment implements Initializable {
     public TextField idTextBox;
     public TextField titleTextBox;
@@ -150,15 +153,42 @@ public class addAppointment implements Initializable {
      * Performs error checking and then saves the appointment to the database.
      */
     public void saveButtonClick(ActionEvent actionEvent) throws IOException {
-        //TODO Entry error checking
-
 
         //Assign the values entered to variables.
         String apptTitle = titleTextBox.getText();
         String apptDescription = descriptionTextBox.getText();
         String apptLocation = locationTextBox.getText();
-        String apptType = (String) typeComboBox.getSelectionModel().getSelectedItem();
         String currentUser = userInfo.saveUsername; //used for created by and last update by
+
+        //Variables for flagging and entry error and passing message to the error message method.
+        boolean entryError = false;
+        String badEntryMsg = "";
+
+        //Checks for a blank title
+        if (apptTitle.equals("")) {
+            badEntryMsg = badEntryMsg + "Appointment title cannot be blank.";
+            entryError = true;
+        }
+
+        //Checks for a blank description.
+        if (apptDescription.equals("")) {
+            //If a previous entry was also bad, add a new line to the error string.
+            if (entryError) {
+                badEntryMsg = badEntryMsg + "\n";
+            }
+            badEntryMsg = badEntryMsg + "Appointment description cannot be blank.";
+            entryError = true;
+        }
+
+        //Checks for a blank location.
+        if (apptLocation.equals("")) {
+            //If a previous entry was also bad, add a new line to the error string.
+            if (entryError) {
+                badEntryMsg = badEntryMsg + "\n";
+            }
+            badEntryMsg = badEntryMsg + "Appointment location cannot be blank.";
+            entryError = true;
+        }
 
         //Checking the date picker to ensure it isn't blank and the date is in the future or present.
         try {
@@ -171,10 +201,14 @@ public class addAppointment implements Initializable {
             displayMessages.errorMsg("Date cannot be blank. Please pick a date.");
         }
 
+
         //Get the entered times and date.
+
         String startTime = (String) startTimeCombo.getSelectionModel().getSelectedItem();
         String endTime = (String) endTimeCombo.getSelectionModel().getSelectedItem();
+
         LocalDate formDate = datePicker.getValue();
+
 
         //Gets the default time zone to as a ZoneId object
         ZoneId tzName = ZoneId.of(timeZone.timeZoneName());
@@ -182,9 +216,16 @@ public class addAppointment implements Initializable {
         //Formatter to combine the entered dates and times into a local time format.
         DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_TIME;
 
-        //Converts the time strings to a local time object.
-        LocalTime localTimeStart = LocalTime.parse(startTime, formatter);
-        LocalTime localTimeEnd = LocalTime.parse(endTime, formatter);
+        //Converts the time strings to a local time object. Done in a try-catch as this will catch an empty combo for the times.
+        LocalTime localTimeStart = null;
+        LocalTime localTimeEnd = null;
+
+        try {
+            localTimeStart = LocalTime.parse(startTime, formatter);
+            localTimeEnd = LocalTime.parse(endTime, formatter);
+        } catch (NullPointerException e) {
+            displayMessages.errorMsg("Appointment times cannot be blank. Please pick a start and end time.");
+        }
 
         //Create a zoned date time object by combining date, local time, and time zone ID
         ZonedDateTime localStartTime = ZonedDateTime.of(formDate, localTimeStart, tzName);
@@ -194,150 +235,201 @@ public class addAppointment implements Initializable {
         ZonedDateTime utcStart = localStartTime.withZoneSameInstant(ZoneId.of("UTC"));
         ZonedDateTime utcEnd = localEndTime.withZoneSameInstant(ZoneId.of("UTC"));
 
-
-        //Printing out data for debugging.
-        //TODO delete this when done.
-        System.out.println("Local " + localStartTime + " UTC " + utcStart);
-        System.out.println("Local " + localEndTime + " UTC " + utcEnd);
-
         //Convert the zoned date times in UTC back to local times to save to the database.
         LocalDateTime ldtStart = utcStart.toLocalDateTime();
         LocalDateTime ldtEnd = utcEnd.toLocalDateTime();
 
-        //Get the customer and contact names from the combo boxes.
+
+        //Error checking for the time entries.
+
+        if (ldtEnd.isEqual(ldtStart) || ldtEnd.isBefore(ldtStart)) {
+            if (entryError) {
+                badEntryMsg = badEntryMsg + "\n";
+            }
+
+            badEntryMsg = badEntryMsg + "The end time must be after the start time.";
+            entryError = true;
+
+        }
+
+//Check if the comboboxes for customer, contact and type are empty. If they are, the booleans are true.
+        boolean customerEmpty = customerCombo.getSelectionModel().isEmpty();
+        boolean contactEmpty = contactCombo.getSelectionModel().isEmpty();
+        boolean apptTypeEmpty = typeComboBox.getSelectionModel().isEmpty();
+
+        //Create the error message for an empty customer box.
+        if (customerEmpty) {
+            if (entryError) {
+                badEntryMsg = badEntryMsg + "\n";
+            }
+
+            badEntryMsg = badEntryMsg + "Select a customer to associate with the appointment.";
+            entryError = true;
+        }
+
+//Create the error message for an empty contact box.
+        if (contactEmpty) {
+            if (entryError) {
+                badEntryMsg = badEntryMsg + "\n";
+            }
+
+            badEntryMsg = badEntryMsg + "Select a contact to associate with the appointment.";
+            entryError = true;
+        }
+
+        //Create the error message for an empty appointment type box.
+        if (apptTypeEmpty) {
+            if (entryError) {
+                badEntryMsg = badEntryMsg + "\n";
+            }
+
+            badEntryMsg = badEntryMsg + "Select the appointment type.";
+            entryError = true;
+        }
+
+        //Get the customer and contact names and appointment type from the combo boxes.
         String customer = (String) customerCombo.getSelectionModel().getSelectedItem();
+
         String contact = (String) contactCombo.getSelectionModel().getSelectedItem();
 
-        try {
-            //Query for the Customer ID
-            String sql = "SELECT Customer_ID FROM customers WHERE Customer_Name = ?";
-            DBQuery.setPreparedStatement(DBConnect.getConnection(), sql); //Creating the prepared statement object
-            PreparedStatement ps = DBQuery.getPreparedStatement(); //referencing the prepared statement
-            ps.setString(1, customer);
-            ps.executeQuery(); //Runs the sql query
-            ResultSet customerID_RS = ps.getResultSet(); //Setting the results of the query to a result set
-            customerID_RS.next(); //Moves to the first result in the result set
+        String apptType = (String) typeComboBox.getSelectionModel().getSelectedItem();
 
-            int customerID = customerID_RS.getInt("Customer_ID");
-
-
-            //Query for the User ID - This can be done on initilization?
-            sql = "SELECT User_ID FROM users WHERE User_Name = ?";
-            DBQuery.setPreparedStatement(DBConnect.getConnection(), sql); //Creating the prepared statement object
-            PreparedStatement ps1 = DBQuery.getPreparedStatement(); //referencing the prepared statement
-            ps1.setString(1, currentUser);
-            ps1.executeQuery(); //Runs the sql query
-            ResultSet userID_RS = ps1.getResultSet();
-
-            userID_RS.next();
-
-            int userID = userID_RS.getInt("User_ID");
-
-
-            //Query for the Contact ID
-            sql = "SELECT Contact_ID FROM contacts WHERE Contact_Name = ?";
-            DBQuery.setPreparedStatement(DBConnect.getConnection(), sql); //Creating the prepared statement object
-            PreparedStatement ps2 = DBQuery.getPreparedStatement(); //referencing the prepared statement
-            ps2.setString(1, contact);
-            ps2.executeQuery(); //Runs the sql query
-            ResultSet contactID_RS = ps2.getResultSet();
-
-            contactID_RS.next();
-
-            int contactsID = contactID_RS.getInt("Contact_ID");
-
-
-            //Check for overlapping appointments.
-
-            //Get all the appointments and add them to a result set.
-            sql = "SELECT * FROM appointments";
-            DBQuery.setPreparedStatement(DBConnect.getConnection(), sql); //Creating the prepared statement object
-            PreparedStatement ps3 = DBQuery.getPreparedStatement(); //referencing the prepared statement
-            ps3.executeQuery(); //Runs the sql query
-            ResultSet allAppointmentsRS = ps3.getResultSet();
-
-            //Variable to act as a flag to determine if an overlap was found.
-            boolean overlapFlag = false;
-
-            while (allAppointmentsRS.next()) {
-
-                //Formatter to parse the string from the DB into date and times.
-                DateTimeFormatter formatFromDB = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-
-                //Get the start and end times of the current appointment as strings.
-                String dbStart = allAppointmentsRS.getString("Start");
-                String dbEnd = allAppointmentsRS.getString("End");
-
-                //Convert the strings from the DB to Local Time types.
-                LocalTime dbLocalStart = LocalTime.parse(dbStart, formatFromDB);
-                LocalTime dbLocalEnd = LocalTime.parse(dbEnd, formatFromDB);
-
-                //Convert the strings to local date types.
-                LocalDate dbStartDate = LocalDate.parse(dbStart, formatFromDB);
-                LocalDate dbEndDate = LocalDate.parse(dbEnd, formatFromDB);
-
-                //Create zoneddatetime objects from the time and date from the DB.
-                ZonedDateTime dbZonedStart = ZonedDateTime.of(dbStartDate, dbLocalStart, ZoneId.of("UTC"));
-                ZonedDateTime dbZonedEnd = ZonedDateTime.of(dbEndDate, dbLocalEnd, ZoneId.of("UTC"));
-
-                //If the date and time of the start times match, then raise the overlap flag
-                if (dbZonedStart.equals(utcStart)) {
-                    overlapFlag = true;
-                }
-
-                //If the end date and time are equal, there is an overlap.
-                if (dbZonedEnd.equals(utcEnd)) {
-                    overlapFlag = true;
-                }
-
-                //If the start time is between times of another meeting.
-                if (utcStart.isAfter(dbZonedStart) && utcStart.isBefore(dbZonedEnd)) {
-                    overlapFlag = true;
-                }
-
-                //If the end time falls between another meeting.
-                if (utcEnd.isAfter(dbZonedStart) && utcEnd.isBefore(dbZonedEnd)) {
-                    overlapFlag = true;
-                }
-
-                //Error message if the overlap flag is raised.
-                if (overlapFlag) {
-                    displayMessages.errorMsg("The times entered overlaps with another meeting. Please adjust the times and try again.");
-                }
-
-
-            }
-
-
-            //If no time overlap was found, proceed to insert.
-
-            if (!overlapFlag) {
-                //SQL Insert query to insert the appointment into the DB
-                sql = "INSERT INTO appointments (Title, Description, Location, Type, Start, End, Created_By, Last_Updated_By, Customer_ID, User_ID, Contact_ID) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-
+        //If there are no entry error, proceed with pulling data using SQL queries.
+        if (!entryError) {
+            try {
+                //Query for the Customer ID
+                String sql = "SELECT Customer_ID FROM customers WHERE Customer_Name = ?";
                 DBQuery.setPreparedStatement(DBConnect.getConnection(), sql); //Creating the prepared statement object
-                PreparedStatement prepState = DBQuery.getPreparedStatement(); //referencing the prepared statement
+                PreparedStatement ps = DBQuery.getPreparedStatement(); //referencing the prepared statement
+                ps.setString(1, customer);
+                ps.executeQuery(); //Runs the sql query
+                ResultSet customerID_RS = ps.getResultSet(); //Setting the results of the query to a result set
+                customerID_RS.next(); //Moves to the first result in the result set
 
-                //Sets the values for the various parameters in the SQL statement.
-                prepState.setString(1, apptTitle);
-                prepState.setString(2, apptDescription);
-                prepState.setString(3, apptLocation);
-                prepState.setString(4, apptType);
-                prepState.setObject(5, ldtStart);
-                prepState.setObject(6, ldtEnd);
-                prepState.setString(7, currentUser);
-                prepState.setString(8, currentUser);
-                prepState.setInt(9, customerID);
-                prepState.setInt(10, userID);
-                prepState.setInt(11, contactsID);
+                int customerID = customerID_RS.getInt("Customer_ID");
 
-                prepState.execute(); //Runs the sql query
 
-                //Returns to the home screen after saving the info to the DB
-                returnHome.loadHome(actionEvent);
+                //Query for the User ID
+                sql = "SELECT User_ID FROM users WHERE User_Name = ?";
+                DBQuery.setPreparedStatement(DBConnect.getConnection(), sql); //Creating the prepared statement object
+                PreparedStatement ps1 = DBQuery.getPreparedStatement(); //referencing the prepared statement
+                ps1.setString(1, currentUser);
+                ps1.executeQuery(); //Runs the sql query
+                ResultSet userID_RS = ps1.getResultSet();
+
+                userID_RS.next();
+
+                int userID = userID_RS.getInt("User_ID");
+
+
+                //Query for the Contact ID
+                sql = "SELECT Contact_ID FROM contacts WHERE Contact_Name = ?";
+                DBQuery.setPreparedStatement(DBConnect.getConnection(), sql); //Creating the prepared statement object
+                PreparedStatement ps2 = DBQuery.getPreparedStatement(); //referencing the prepared statement
+                ps2.setString(1, contact);
+                ps2.executeQuery(); //Runs the sql query
+                ResultSet contactID_RS = ps2.getResultSet();
+
+                contactID_RS.next();
+
+                int contactsID = contactID_RS.getInt("Contact_ID");
+
+
+                //Check for overlapping appointments.
+
+                //Get all the appointments and add them to a result set.
+                sql = "SELECT * FROM appointments";
+                DBQuery.setPreparedStatement(DBConnect.getConnection(), sql); //Creating the prepared statement object
+                PreparedStatement ps3 = DBQuery.getPreparedStatement(); //referencing the prepared statement
+                ps3.executeQuery(); //Runs the sql query
+                ResultSet allAppointmentsRS = ps3.getResultSet();
+
+                //Variable to act as a flag to determine if an overlap was found.
+                boolean overlapFlag = false;
+
+                while (allAppointmentsRS.next()) {
+
+                    //Formatter to parse the string from the DB into date and times.
+                    DateTimeFormatter formatFromDB = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
+                    //Get the start and end times of the current appointment as strings.
+                    String dbStart = allAppointmentsRS.getString("Start");
+                    String dbEnd = allAppointmentsRS.getString("End");
+
+                    //Convert the strings from the DB to Local Time types.
+                    LocalTime dbLocalStart = LocalTime.parse(dbStart, formatFromDB);
+                    LocalTime dbLocalEnd = LocalTime.parse(dbEnd, formatFromDB);
+
+                    //Convert the strings to local date types.
+                    LocalDate dbStartDate = LocalDate.parse(dbStart, formatFromDB);
+                    LocalDate dbEndDate = LocalDate.parse(dbEnd, formatFromDB);
+
+                    //Create zoneddatetime objects from the time and date from the DB.
+                    ZonedDateTime dbZonedStart = ZonedDateTime.of(dbStartDate, dbLocalStart, ZoneId.of("UTC"));
+                    ZonedDateTime dbZonedEnd = ZonedDateTime.of(dbEndDate, dbLocalEnd, ZoneId.of("UTC"));
+
+                    //If the date and time of the start times match, then raise the overlap flag
+                    if (dbZonedStart.equals(utcStart)) {
+                        overlapFlag = true;
+                    }
+
+                    //If the end date and time are equal, there is an overlap.
+                    if (dbZonedEnd.equals(utcEnd)) {
+                        overlapFlag = true;
+                    }
+
+                    //If the start time is between times of another meeting.
+                    if (utcStart.isAfter(dbZonedStart) && utcStart.isBefore(dbZonedEnd)) {
+                        overlapFlag = true;
+                    }
+
+                    //If the end time falls between another meeting.
+                    if (utcEnd.isAfter(dbZonedStart) && utcEnd.isBefore(dbZonedEnd)) {
+                        overlapFlag = true;
+                    }
+
+                    //Error message if the overlap flag is raised.
+                    if (overlapFlag) {
+                        displayMessages.errorMsg("The times entered overlaps with another meeting. Please adjust the times and try again.");
+                    }
+
+
+                }
+
+
+                //If no time overlap was found, proceed to insert.
+
+                if (!overlapFlag) {
+                    //SQL Insert query to insert the appointment into the DB
+                    sql = "INSERT INTO appointments (Title, Description, Location, Type, Start, End, Created_By, Last_Updated_By, Customer_ID, User_ID, Contact_ID) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
+                    DBQuery.setPreparedStatement(DBConnect.getConnection(), sql); //Creating the prepared statement object
+                    PreparedStatement prepState = DBQuery.getPreparedStatement(); //referencing the prepared statement
+
+                    //Sets the values for the various parameters in the SQL statement.
+                    prepState.setString(1, apptTitle);
+                    prepState.setString(2, apptDescription);
+                    prepState.setString(3, apptLocation);
+                    prepState.setString(4, apptType);
+                    prepState.setObject(5, ldtStart);
+                    prepState.setObject(6, ldtEnd);
+                    prepState.setString(7, currentUser);
+                    prepState.setString(8, currentUser);
+                    prepState.setInt(9, customerID);
+                    prepState.setInt(10, userID);
+                    prepState.setInt(11, contactsID);
+
+                    prepState.execute(); //Runs the sql query
+
+                    //Returns to the home screen after saving the info to the DB
+                    returnHome.loadHome(actionEvent);
+                }
+            } catch (SQLException e) {
+                displayMessages.errorMsg("SQL Exception error encountered! " + e.getMessage());
             }
-        } catch (SQLException e) {
-            displayMessages.errorMsg("SQL Exception error encountered! " + e.getMessage());
+        } else {
+            //This will display the error message if there were any entry errors found.
+            displayMessages.errorMsg(badEntryMsg);
         }
 
 

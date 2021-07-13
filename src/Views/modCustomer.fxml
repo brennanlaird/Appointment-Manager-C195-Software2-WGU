@@ -56,13 +56,9 @@
       </Label>
       <HBox layoutX="29.0" layoutY="427.0" prefHeight="64.0" prefWidth="436.0">
          <children>
-            <Button fx:id="clearFormButton" mnemonicParsing="false" onAction="#clearFormButtonClick" text="Clear Form">
-               <HBox.margin>
-                  <Insets right="100.0" />
-               </HBox.margin></Button>
             <Button fx:id="saveButton" mnemonicParsing="false" onAction="#saveButtonClick" text="Save Customer">
                <HBox.margin>
-                  <Insets right="100.0" />
+                  <Insets left="100.0" right="100.0" />
                </HBox.margin></Button>
             <Button fx:id="cancelButton" mnemonicParsing="false" onAction="#cancelButtonClick" text="Cancel" />
          </children>
