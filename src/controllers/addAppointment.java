@@ -57,11 +57,9 @@ public class addAppointment implements Initializable {
         //Sets the time zone label to display the name of the users current time zone.
         tzLabel.setText(timeZone.timeZoneName());
 
-        //TODO - Can this be done with only the apptTypes object rather than from the meeting types utility?
+
         //Sets the combobox to display the available meeting types.
-        typeComboBox.setItems(meetingTypes.getMeetTypesCombo());
-        //apptType.createTypes();
-        //typeComboBox.setItems(apptType.meetingTypes);
+        typeComboBox.setItems(apptType.meetingTypes);
 
         //Gets the default time zone to as a ZoneId object
         ZoneId tzName = ZoneId.of(timeZone.timeZoneName());

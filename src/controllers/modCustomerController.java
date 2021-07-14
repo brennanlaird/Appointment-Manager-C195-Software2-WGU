@@ -23,6 +23,9 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 
+/**
+ * This class controls the modification of customer records.
+ */
 public class modCustomerController {
     public TextField idTextBox;
     public TextField customerNameBox;
@@ -34,7 +37,6 @@ public class modCustomerController {
     public ComboBox countryCombo;
     public ComboBox firstLevelCombo;
 
-    public Button clearFormButton;
     public Button saveButton;
     public Button cancelButton;
 
@@ -43,7 +45,11 @@ public class modCustomerController {
     public Label countryLabel;
     public Label phoneLabel;
 
-    public void receiveCustomer(Customer selectedItem) throws SQLException {
+    /**
+     * This method receives the selected customer item and populates the form with the received data.
+     * @param selectedItem The customer item selected from the main screen and passed to this controller.
+     */
+    public void receiveCustomer(Customer selectedItem) {
         //Sets the text boxes to contain the information from the Customer object passed in from the main form.
         idTextBox.setText(String.valueOf(selectedItem.getId()));
         customerNameBox.setText(String.valueOf(selectedItem.getName()));
@@ -92,8 +98,8 @@ public class modCustomerController {
             countryCombo.setItems(countryList);
 
 
-        } catch (Exception e) {
-            System.out.println("There was a problem here.");
+        } catch (SQLException e) {
+            displayMessages.errorMsg("SQL Exception error encountered! " + e.getMessage());
 
         }
 
@@ -102,7 +108,7 @@ public class modCustomerController {
 
         try {
 
-
+            //SQL statements to get the country ID from the division ID.
             String sql = "SELECT COUNTRY_ID, Division FROM first_level_divisions WHERE Division_ID = ?";
             DBQuery.setPreparedStatement(DBConnect.getConnection(), sql); //Creating the prepared statement object
             PreparedStatement ps = DBQuery.getPreparedStatement(); //referencing the prepared statement
@@ -116,7 +122,7 @@ public class modCustomerController {
 
             String divisionID = countryID_RS.getString("Division");
 
-
+            //Use the country ID to get the associated country name.
             sql = "SELECT Country FROM countries WHERE Country_ID=?";
 
             DBQuery.setPreparedStatement(DBConnect.getConnection(), sql); //Creating the prepared statement object
@@ -125,15 +131,17 @@ public class modCustomerController {
             ps1.execute(); //Runs the sql query
             ResultSet countryName_RS = ps1.getResultSet(); //Setting the results of the query to a result set
 
-
             countryName_RS.next();
 
             String countryName = countryName_RS.getString("COUNTRY");
 
-
+            //Set the value of the combo box to the country name.
             countryCombo.setValue(countryName);
+
+            //Call the country combo change method to populate the first level division combo and change labels.
             countryComboChange();
 
+            //Enable the first level division combos and set the value.
             firstLevelCombo.setDisable(false);
             firstLevelLabel.setDisable(false);
             firstLevelCombo.setValue(divisionID);
@@ -226,7 +234,6 @@ public class modCustomerController {
 
 
     }
-
 
 
     /**

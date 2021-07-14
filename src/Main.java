@@ -3,6 +3,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
+import objects.apptType;
 import utilities.DBConnect;
 import utilities.DBQuery;
 import utilities.meetingTypes;
@@ -27,8 +28,9 @@ public class Main extends Application {
         //Starts the connection to the mysql DB
         DBConnect.startConnection();
 
-        //meetingTypes.populateAppointmentTypes();
+        //Populates the list of appointment types
         meetingTypes.populatemeetingTypeCombo();
+
 
 
         launch(args);

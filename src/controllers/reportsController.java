@@ -6,10 +6,8 @@ import javafx.event.ActionEvent;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import objects.Appointment;
-import objects.Customer;
 import objects.appointmentTypeReport;
 import objects.apptType;
 import utilities.*;
@@ -23,15 +21,22 @@ import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.ResourceBundle;
 
+/**
+ * Implements three different reports based on the data.
+ */
 public class reportsController implements Initializable {
     public ToggleGroup reportType;
-    public AnchorPane contactPane;
-
-    public Button returnToMain;
     public RadioButton apptTypeButton;
     public RadioButton contactScheduleButton;
+    public RadioButton customerScheduleButton;
+
+    public AnchorPane apptTypePane;
+    public AnchorPane contactPane;
+    public AnchorPane customerPane;
+
+    public Button returnToMain;
+
     public TableView contactTable;
-    public TableColumn contactNameCol;
     public TableColumn apptIDCol;
     public TableColumn apptTitleCol;
     public TableColumn apptTypeCol;
@@ -39,9 +44,10 @@ public class reportsController implements Initializable {
     public TableColumn apptStartCol;
     public TableColumn apptEndCol;
     public TableColumn customerIDCol;
+
     public ComboBox contactNameCombo;
-    public AnchorPane customerPane;
-    public ComboBox customerCombo;
+
+    public TableView customerTable;
     public TableColumn apptIDColCustomer;
     public TableColumn apptTitleColCustomer;
     public TableColumn apptTypeColCustomer;
@@ -49,23 +55,17 @@ public class reportsController implements Initializable {
     public TableColumn apptStartColCustomer;
     public TableColumn apptEndColCustomer;
     public TableColumn contactIDColCustomer;
-    public RadioButton customerScheduleButton;
-    public TableView customerTable;
-    public AnchorPane apptTypePane;
+
+    public ComboBox customerCombo;
+
     public ComboBox monthComboBox;
-    public Label testLabel;
-    public TableView currentMonthTable;
-    public TableColumn apptTypeCol1;
-    public TableColumn apptCountCol;
+    public ComboBox yearCombo;
 
     public TableView testApptView;
     public TableColumn testApptViewCol;
     public TableColumn testApptViewCol2;
+
     public Label tableHeader;
-    public ComboBox yearCombo;
-
-
-    public static boolean initializeFlag = false;
 
 
     //Setup the observable lists for the combo boxes.
@@ -76,7 +76,9 @@ public class reportsController implements Initializable {
     ObservableList<Month> availableMonths = FXCollections.observableArrayList();
     ObservableList<Year> availableYears = FXCollections.observableArrayList();
 
-
+    /**
+     * Sets up the meeting types from the class and hides the anchor panes until a button is clicked to show them.
+     */
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
 
@@ -88,7 +90,6 @@ public class reportsController implements Initializable {
 
 
         //Setting the meeting type buckets.
-
         apptType.meetingTypes.clear();
         apptType.createTypes();
 
@@ -107,13 +108,12 @@ public class reportsController implements Initializable {
                 contactList.add(temp);
             }
 
-            //Sets the items to display in the country combo box
+            //Sets the items to display in the contacts combo box
             contactNameCombo.setItems(contactList);
 
 
-        } catch (Exception e) {
-            System.out.println("There was a problem retrieving contacts.");
-
+        } catch (SQLException e) {
+            displayMessages.errorMsg("SQL Exception error encountered! " + e.getMessage());
         }
 
 
@@ -136,12 +136,12 @@ public class reportsController implements Initializable {
             customerCombo.setItems(customerList);
 
 
-        } catch (Exception e) {
-            System.out.println("There was a problem adding the customer data.");
+        } catch (SQLException e) {
+            displayMessages.errorMsg("SQL Exception error encountered! " + e.getMessage());
 
         }
 
-        initializeFlag = true;
+
     }
 
     /**
@@ -153,17 +153,15 @@ public class reportsController implements Initializable {
         returnHome.loadHome(actionEvent);
     }
 
-
+    /**
+     * @param actionEvent The button click action event.
+     */
     public void apptTypeButtonSelect(ActionEvent actionEvent) {
         //Set the visibility of the panes.
         contactPane.setVisible(false);
         customerPane.setVisible(false);
         apptTypePane.setVisible(true);
 
-
-        //Get the local date and change the table header label.
-        LocalDate rightNow = LocalDate.now();
-        //tableHeader.setText(rightNow.getMonth() + " " + rightNow.getYear() + " Appointments");
 
         //Set the table to display the appointment types and counts from the apptType observable list.
         testApptView.setItems(apptType.meetingTypes);
@@ -173,7 +171,10 @@ public class reportsController implements Initializable {
         monthComboBox.setItems(availableMonths);
         yearCombo.setItems(availableYears);
 
+
+        //Clear the list to avoid displaying extra appointments.
         apptTypeList.clear();
+        apptList.clear();
 
         //Get the appointments and create the objects
         try {
@@ -193,42 +194,43 @@ public class reportsController implements Initializable {
                 String apptLocation = appointmentRS.getString("Location");
                 String apptType = appointmentRS.getString("Type");
 
-
+                //Date time formatter that matches the pattern from the database.
+                //This is used to parse the strings from the database into date time objects in Java.
                 DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
+                //Parse the start time into a local date time and then change it to a zoned date time
                 LocalDateTime startTime = LocalDateTime.parse(appointmentRS.getString("Start"), formatter);
                 ZonedDateTime apptStart = ZonedDateTime.of(startTime, ZoneId.of("UTC"));
 
+                //Parse the end time into a local date time and then change it to a zoned date time
                 LocalDateTime endTime = LocalDateTime.parse(appointmentRS.getString("End"), formatter);
                 ZonedDateTime apptEnd = ZonedDateTime.of(endTime, ZoneId.of("UTC"));
 
-
+                //Get the name of the users current time zone.
                 ZoneId tz = ZoneId.of(timeZone.timeZoneName());
+
 
                 ZonedDateTime apptEndlocal = ZonedDateTime.ofInstant(apptEnd.toInstant(), tz);
 
-                //TODO - Is this helpful? could potentially get rid of TypeReport class?
+
+                //Create a new object and add it to the list.
                 appointmentTypeReport temp = new appointmentTypeReport(apptType, apptStart);
                 apptTypeList.add(temp);
 
+                //Get the month and year of the current appointment start time.
                 Month apptMonth = apptStart.getMonth();
                 Year apptYear = Year.of(apptStart.getYear());
 
+                //If not already on the list, add the month to the list for the combo box.
                 if (!availableMonths.contains(apptMonth)) {
                     availableMonths.add(apptMonth);
                 }
-
+                //If not already on the list, add the year to the list for the combo box.
                 if (!availableYears.contains(apptYear)) {
                     availableYears.add(apptYear);
                 }
 
-
-
-
-
-
-
-
+                //Code to add a new appointment object. Left in for potential future use.
 /*
                 Appointment temp = new Appointment(apptID, apptTitle, apptDescription, apptLocation, apptType, apptStart,
                         apptEnd, apptCreator, apptUpdater, apptCustomerID, apptUserID, apptContactID, apptContact);
@@ -236,43 +238,61 @@ public class reportsController implements Initializable {
 */
             }
 
-            //TODO Fix null pointer exception
+
+            //Sets the month and year combo boxes to select the first items.
             monthComboBox.getSelectionModel().select(0);
             yearCombo.getSelectionModel().select(0);
 
 
         } catch (SQLException e) {
-            System.out.println("Error getting appointments");
+            displayMessages.errorMsg("SQL Exception error encountered! " + e.getMessage());
         }
 
 
-        currentMonthTable.setItems(apptTypeList);
-
-        apptTypeCol1.setCellValueFactory(new PropertyValueFactory<>("type"));
-        apptCountCol.setCellValueFactory(new PropertyValueFactory<>("date"));
-
-        initializeFlag = true;
     }
 
+    /**
+     * Sets the contact schedule pane as visible so the controls in that anchor pane can be interacted with. All the
+     * other panes are set to invisible.
+     *
+     * @param actionEvent The button click action event.
+     */
     public void contactScheduleButton(ActionEvent actionEvent) {
+        //Sets the elements in the contact pane as visible.
         contactPane.setVisible(true);
         contactNameCombo.setVisible(true);
         contactTable.setVisible(true);
 
+        //Sets the other panes as not visible.
         customerPane.setVisible(false);
         apptTypePane.setVisible(false);
     }
 
+    /**
+     * Sets the customer schedule pane as visible so the controls in that anchor pane can be interacted with. All the
+     * other panes are set to invisible.
+     *
+     * @param actionEvent The button click action event.
+     */
     public void customerScheduleButtonSelect(ActionEvent actionEvent) {
+        //Sets the customer anchor pane to visible.
         customerPane.setVisible(true);
+
+        //Sets the other anchor panes to invisible.
         contactPane.setVisible(false);
         apptTypePane.setVisible(false);
     }
 
+    /**
+     * Displays all the appointments associated with the contact selected from the combo box.
+     *
+     * @param actionEvent The button click action event.
+     */
     public void contactNameComboChange(ActionEvent actionEvent) {
         //Put the selected string from the combo into a variable
         String contactName = (String) contactNameCombo.getSelectionModel().getSelectedItem();
 
+        //Sets the contacts ID as zero outside the try-catch block.
         int contactsID = 0;
 
         //Clear the appointment list to prevent stray appointments from appearing.
@@ -294,7 +314,7 @@ public class reportsController implements Initializable {
             contactsID = contactID_RS.getInt("Contact_ID");
 
         } catch (SQLException e) {
-            System.out.println("Error getting Contact ID");
+            displayMessages.errorMsg("SQL Exception error encountered! " + e.getMessage());
         }
 
         //Get the appointment IDs that match the contact name from the DB and add those appointments to the list
@@ -307,11 +327,6 @@ public class reportsController implements Initializable {
             ps.executeQuery(); //Runs the sql query
             ResultSet appointmentRS = ps.getResultSet(); //Setting the results of the query to a result set
 
-            //Declares a local date time as null to store the minimum start time.
-            LocalDateTime minStart = null;
-            //Declares a null appointment object to store the information about the next appointment.
-            Appointment nextAppt = null;
-
             while (appointmentRS.next()) {
                 int apptID = appointmentRS.getInt("Appointment_ID");
                 String apptTitle = appointmentRS.getString("Title");
@@ -319,27 +334,24 @@ public class reportsController implements Initializable {
                 String apptLocation = appointmentRS.getString("Location");
                 String apptType = appointmentRS.getString("Type");
 
-
+                //Date time formatter that matches the pattern from the database.
+                //This is used to parse the strings from the database into date time objects in Java.
                 DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
+                //Parse the start time into a local date time and then change it to a zoned date time
                 LocalDateTime startTime = LocalDateTime.parse(appointmentRS.getString("Start"), formatter);
                 ZonedDateTime apptStart = ZonedDateTime.of(startTime, ZoneId.of("UTC"));
 
+                //Parse the end time into a local date time and then change it to a zoned date time
                 LocalDateTime endTime = LocalDateTime.parse(appointmentRS.getString("End"), formatter);
                 ZonedDateTime apptEnd = ZonedDateTime.of(endTime, ZoneId.of("UTC"));
 
-
+                //Get the name of the users current time zone.
                 ZoneId tz = ZoneId.of(timeZone.timeZoneName());
+
 
                 ZonedDateTime apptEndlocal = ZonedDateTime.ofInstant(apptEnd.toInstant(), tz);
 
-
-                //System.out.println(tz);
-                //System.out.println(apptEnd);
-
-                //apptEnd.ofInstant(apptEnd.toInstant(),tz);
-
-                //System.out.println("After conversion: " + apptEndlocal);
 
                 String apptCreator = appointmentRS.getString("Created_By");
                 String apptUpdater = appointmentRS.getString("Last_Updated_By");
@@ -349,19 +361,20 @@ public class reportsController implements Initializable {
 
                 String apptContact = convertID.convertContact(apptContactID);
 
+                //Create a new appointment and add it to the list.
                 Appointment temp = new Appointment(apptID, apptTitle, apptDescription, apptLocation, apptType, apptStart,
                         apptEnd, apptCreator, apptUpdater, apptCustomerID, apptUserID, apptContactID, apptContact);
                 apptList.add(temp);
 
             }
         } catch (SQLException e) {
-            System.out.println("Error getting appointments");
+            displayMessages.errorMsg("SQL Exception error encountered! " + e.getMessage());
         }
         //Display the list in the table
 
         contactTable.setItems(apptList);
 
-        //contactNameCol.setCellValueFactory(new PropertyValueFactory<>("contactID"));
+        //Set up the columns for the table.
         apptIDCol.setCellValueFactory(new PropertyValueFactory<>("id"));
         apptTitleCol.setCellValueFactory(new PropertyValueFactory<>("title"));
         apptTypeCol.setCellValueFactory(new PropertyValueFactory<>("type"));
@@ -373,10 +386,16 @@ public class reportsController implements Initializable {
 
     }
 
+    /**
+     * Displays all the appointments associated with the customer selected from the combo box.
+     *
+     * @param actionEvent The button click action event.
+     */
     public void customerComboChange(ActionEvent actionEvent) {
         //Put the selected string from the combo into a variable
         String customerName = (String) customerCombo.getSelectionModel().getSelectedItem();
 
+        //Sets the customer ID as zero outside the try-catch block.
         int customerID = 0;
 
         //Clear the appointment list to prevent stray appointments from appearing.
@@ -397,7 +416,7 @@ public class reportsController implements Initializable {
             customerID = customerID_RS.getInt("Customer_ID");
 
         } catch (SQLException e) {
-            System.out.println("Error getting Customer ID");
+            displayMessages.errorMsg("SQL Exception error encountered! " + e.getMessage());
         }
 
 
@@ -411,10 +430,6 @@ public class reportsController implements Initializable {
             ps.executeQuery(); //Runs the sql query
             ResultSet appointmentRS = ps.getResultSet(); //Setting the results of the query to a result set
 
-            //Declares a local date time as null to store the minimum start time.
-            LocalDateTime minStart = null;
-            //Declares a null appointment object to store the information about the next appointment.
-            Appointment nextAppt = null;
 
             while (appointmentRS.next()) {
                 int apptID = appointmentRS.getInt("Appointment_ID");
@@ -423,27 +438,23 @@ public class reportsController implements Initializable {
                 String apptLocation = appointmentRS.getString("Location");
                 String apptType = appointmentRS.getString("Type");
 
-
+                //Date time formatter that matches the pattern from the database.
+                //This is used to parse the strings from the database into date time objects in Java.
                 DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
+                //Parse the start time into a local date time and then change it to a zoned date time
                 LocalDateTime startTime = LocalDateTime.parse(appointmentRS.getString("Start"), formatter);
                 ZonedDateTime apptStart = ZonedDateTime.of(startTime, ZoneId.of("UTC"));
 
+                //Parse the end time into a local date time and then change it to a zoned date time
                 LocalDateTime endTime = LocalDateTime.parse(appointmentRS.getString("End"), formatter);
                 ZonedDateTime apptEnd = ZonedDateTime.of(endTime, ZoneId.of("UTC"));
 
-
+                //Get the name of the users current time zone.
                 ZoneId tz = ZoneId.of(timeZone.timeZoneName());
 
                 ZonedDateTime apptEndlocal = ZonedDateTime.ofInstant(apptEnd.toInstant(), tz);
 
-
-                //System.out.println(tz);
-                //System.out.println(apptEnd);
-
-                //apptEnd.ofInstant(apptEnd.toInstant(),tz);
-
-                //System.out.println("After conversion: " + apptEndlocal);
 
                 String apptCreator = appointmentRS.getString("Created_By");
                 String apptUpdater = appointmentRS.getString("Last_Updated_By");
@@ -451,21 +462,23 @@ public class reportsController implements Initializable {
                 int apptUserID = appointmentRS.getInt("User_ID");
                 int apptContactID = appointmentRS.getInt("Contact_ID");
 
+                //Convert the contact ID into a string of the cantacts name.
                 String apptContact = convertID.convertContact(apptContactID);
 
+                //Create an appointment object and add it to the list.
                 Appointment temp = new Appointment(apptID, apptTitle, apptDescription, apptLocation, apptType, apptStart,
                         apptEnd, apptCreator, apptUpdater, apptCustomerID, apptUserID, apptContactID, apptContact);
                 apptList.add(temp);
 
             }
         } catch (SQLException e) {
-            System.out.println("Error getting appointments");
+            displayMessages.errorMsg("SQL Exception error encountered! " + e.getMessage());
         }
 
-
+        //Sets the table to display the items added to the list.
         customerTable.setItems(apptList);
 
-        //contactNameCol.setCellValueFactory(new PropertyValueFactory<>("contactID"));
+        //Sets up the table columns.
         apptIDColCustomer.setCellValueFactory(new PropertyValueFactory<>("id"));
         apptTitleColCustomer.setCellValueFactory(new PropertyValueFactory<>("title"));
         apptTypeColCustomer.setCellValueFactory(new PropertyValueFactory<>("type"));
@@ -477,9 +490,13 @@ public class reportsController implements Initializable {
 
     }
 
-
+    /**
+     * Gets the information from both the month and year combo boxes when the month box is changed and sends the values
+     * to the method to update the table.
+     *
+     * @param actionEvent The button click action event.
+     */
     public void monthComboBoxChange(ActionEvent actionEvent) {
-
 
         //Get the selections from the combo boxes.
         Month selectedMonth = (Month) monthComboBox.getSelectionModel().getSelectedItem();
@@ -490,11 +507,16 @@ public class reportsController implements Initializable {
         if (selectedYear == null || selectedMonth == null) {
             updateTypeTable(Month.JANUARY, Year.now());
         } else {
-
             updateTypeTable(selectedMonth, selectedYear);
         }
     }
 
+    /**
+     * Gets the information from both the month and year combo boxes when the year box is changed and sends the values
+     * to the method to update the table.
+     *
+     * @param actionEvent The button click action event.
+     */
     public void yearComboChange(ActionEvent actionEvent) {
         //Get the selections from the combo boxes.
         Month selectedMonth = (Month) monthComboBox.getSelectionModel().getSelectedItem();
@@ -505,54 +527,40 @@ public class reportsController implements Initializable {
 
     }
 
+    /**
+     * This method counts the occurrences of appointment types based on the month and year selected by the user. The month
+     * and year are passed in from other methods.
+     *
+     * @param month The month selected by the user from the combo box.
+     * @param year  The year selected by the user from the combo box.
+     */
     public void updateTypeTable(Month month, Year year) {
 
+        //Reset the counts back to 0
+        apptType.resetCounts();
 
         //Change the table header based on the selection.
         tableHeader.setText(month + " " + year + " Appointments");
 
-        int c0 = apptType.meetingTypes.get(0).getCount();
-        int c1 = apptType.meetingTypes.get(1).getCount();
-        int c2 = apptType.meetingTypes.get(2).getCount();
-        int c3 = apptType.meetingTypes.get(3).getCount();
-        int c4 = apptType.meetingTypes.get(4).getCount();
-        int c5 = apptType.meetingTypes.get(5).getCount();
-
-        System.out.println("Before reset " + c0 + " " + c1 + " " + c2 + " " + c3 + " " + c4 + " " + c5);
-
-
-        apptType.resetCounts();
-        c0 = apptType.meetingTypes.get(0).getCount();
-        c1 = apptType.meetingTypes.get(1).getCount();
-        c2 = apptType.meetingTypes.get(2).getCount();
-        c3 = apptType.meetingTypes.get(3).getCount();
-        c4 = apptType.meetingTypes.get(4).getCount();
-        c5 = apptType.meetingTypes.get(5).getCount();
-        System.out.println("After reset " + c0 + " " + c1 + " " + c2 + " " + c3 + " " + c4 + " " + c5);
-
         //Loop to iterate through all the appointment types found
         for (int i = 0; i < apptTypeList.size(); i++) {
-            //if the type matches then set the count in the appType object to  count + 1
 
-            //System.out.println(apptTypeList.get(i).getType());
-
+            //Set the month and year variables of the current appointment type object.
             Month apptMonth = apptTypeList.get(i).getDate().getMonth();
 
             Year apptYear = Year.of(apptTypeList.get(i).getDate().getYear());
 
 
-            //System.out.println("Selected Month: " + selectedMonth + " Appointment Month: " + apptMonth + " Type: " + apptTypeList.get(i).getType());
-
-
+            //If the passed in month and year selected from the combo boxes matches the current month and year of
+            //the appointment type, continue.
             if (month.equals(apptMonth) && year.equals(apptYear)) {
-                System.out.println("Selected Month: " + month + " Appointment Month: " + apptMonth + " Type: " + apptTypeList.get(i).getType());
 
+
+                //if the type matches then set the count in the appType object to  count + 1
                 if (apptTypeList.get(i).getType().equals("Project Team Meeting")) {
-                    c0++;
                     apptType.meetingTypes.get(0).setCount(apptType.meetingTypes.get(0).getCount() + 1);
                 } else if (apptTypeList.get(i).getType().equals("Stakeholder Meeting")) {
-                    c1++;
-                    apptType.meetingTypes.get(1).setCount(c1);
+                    apptType.meetingTypes.get(1).setCount(apptType.meetingTypes.get(1).getCount() + 1);
                 } else if (apptTypeList.get(i).getType().equals("Change Control Meeting")) {
                     apptType.meetingTypes.get(2).setCount(apptType.meetingTypes.get(2).getCount() + 1);
                 } else if (apptTypeList.get(i).getType().equals("Project Status Meeting")) {
@@ -567,16 +575,9 @@ public class reportsController implements Initializable {
 
 
         }
+        //Refresh the table with the updated data.
         testApptView.refresh();
 
-
-        c0 = apptType.meetingTypes.get(0).getCount();
-        c1 = apptType.meetingTypes.get(1).getCount();
-        c2 = apptType.meetingTypes.get(2).getCount();
-        c3 = apptType.meetingTypes.get(3).getCount();
-        c4 = apptType.meetingTypes.get(4).getCount();
-        c5 = apptType.meetingTypes.get(5).getCount();
-        System.out.println("After loop " + c0 + " " + c1 + " " + c2 + " " + c3 + " " + c4 + " " + c5);
     }
 
 

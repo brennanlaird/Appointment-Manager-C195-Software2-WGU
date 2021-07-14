@@ -21,7 +21,7 @@ public class logFile {
      */
     public static void logAttempt(String user) throws IOException {
         //create a new file writer and buffered reader to save to the text file.
-        FileWriter logFile = new FileWriter("src/logFile.txt", true);
+        FileWriter logFile = new FileWriter("src/login_activity.txt", true);
         BufferedWriter bfWriter = new BufferedWriter(logFile);
 
         //Write the user name and login time to the file seperated by tabs.
@@ -43,7 +43,7 @@ public class logFile {
      */
     public static void logStatus(boolean status) throws IOException {
         //create a new file writer and buffered reader to save to the text file.
-        FileWriter logFile = new FileWriter("src/logFile.txt", true);
+        FileWriter logFile = new FileWriter("src/login_activity.txt", true);
         BufferedWriter bfWriter = new BufferedWriter(logFile);
 
         //If statement to determine success or failure.

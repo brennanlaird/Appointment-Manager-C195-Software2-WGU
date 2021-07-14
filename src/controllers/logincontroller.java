@@ -33,7 +33,7 @@ public class logincontroller implements Initializable {
     public Label headerLabel;
 
     /**
-     * Initilizes the login form by checking the current time zone for display and changing labels
+     * Initializes the login form by checking the current time zone for display and changing labels
      * based on user language settings.
      */
     @Override

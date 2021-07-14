@@ -28,7 +28,7 @@ import java.util.ResourceBundle;
 
 /**
  * The controller for the main screen of the application. Contains controls to access all other forms and a table to
- * view and filter upcoming appoitnments.
+ * view and filter upcoming appointments.
  */
 public class homeController implements Initializable {
 
@@ -66,14 +66,14 @@ public class homeController implements Initializable {
     public ToggleGroup apptFilter;
 
 
-
     //Setting up observable lists for displaying data.
     ObservableList<Customer> allCustomers = FXCollections.observableArrayList();
     ObservableList<Appointment> allAppointments = FXCollections.observableArrayList();
 
-
+    /**
+     * This runs on initialization after login to retrieve and display data.
+     */
     @Override
-    /***/
     public void initialize(URL url, ResourceBundle resourceBundle) {
 
         //Retrieves all the customers from the DB and adds them to the observable list.
@@ -104,8 +104,8 @@ public class homeController implements Initializable {
             }
 
         } catch (SQLException e) {
-            displayMessages.errorMsg("Error retrieving data. Please check the database connection.");
-            //System.out.println("Database Error from the customers.");
+            displayMessages.errorMsg("SQL Exception error encountered! " + e.getMessage());
+
         }
 
         //Retrieves all the appointments from the database and adds them to the list to display.
@@ -136,6 +136,7 @@ public class homeController implements Initializable {
                 //Get the start time from the result set by parsing the string based on the formatter.
                 LocalDateTime startTime = LocalDateTime.parse(appointmentRS.getString("Start"), formatter);
 
+
                 ZonedDateTime apptStart = ZonedDateTime.of(startTime, ZoneId.of("UTC"));
 
                 //Create variables to store the appointment end time as a local date time based on the formatter and
@@ -143,56 +144,59 @@ public class homeController implements Initializable {
                 LocalDateTime endTime = LocalDateTime.parse(appointmentRS.getString("End"), formatter);
                 ZonedDateTime apptEnd = ZonedDateTime.of(endTime, ZoneId.of("UTC"));
 
-                //Call the method to get and store the time zone ID of the current user
-                ZoneId tz = ZoneId.of(timeZone.timeZoneName());
-
-                //ZonedDateTime apptEndlocal = ZonedDateTime.ofInstant(apptEnd.toInstant(), tz);
-
-
+                //Assign additional values from the result set to variables to create an appointment object.
                 String apptCreator = appointmentRS.getString("Created_By");
                 String apptUpdater = appointmentRS.getString("Last_Updated_By");
                 int apptCustomerID = appointmentRS.getInt("Customer_ID");
                 int apptUserID = appointmentRS.getInt("User_ID");
                 int apptContactID = appointmentRS.getInt("Contact_ID");
 
+                //Convert the contact ID to a name.
                 String apptContact = convertID.convertContact(apptContactID);
 
+                //Create a new appointment then add it to the list to display.
                 Appointment temp = new Appointment(apptID, apptTitle, apptDescription, apptLocation, apptType, apptStart,
                         apptEnd, apptCreator, apptUpdater, apptCustomerID, apptUserID, apptContactID, apptContact);
                 allAppointments.add(temp);
 
-                //Store the minimum start time that is next and in the future.
+                //Find the start time of the next meeting.
+                //These IF statements find the next meeting. This is used to flag appoitnments within 15-minutes.
                 if (minStart == null && startTime.isAfter(LocalDateTime.now())) {
                     minStart = startTime;
                     nextAppt = temp;
-                } else if (minStart !=  null && startTime.isBefore(minStart) && startTime.isAfter(LocalDateTime.now())) {
+                } else if (minStart != null && startTime.isBefore(minStart) && startTime.isAfter(LocalDateTime.now())) {
                     minStart = startTime;
                     nextAppt = temp;
                 }
 
             }
 
+            //Checks the login flag and displays an upcoming appointment notification .
             if (!loginFlag.loginCheck) {
                 displayMessages.apptUpcoming(nextAppt.getId(), minStart);
                 loginFlag.loginCheck = true;
             }
 
 
-
-        } catch (Exception SQLException) {
-            System.out.println("Database Error from the appointments.");
+        } catch (SQLException e) {
+            displayMessages.errorMsg("SQL Exception error encountered! " + e.getMessage());
         }
 
 
+        //Sets the items for the customer table.
         customerTable.setItems(allCustomers);
 
+        //Sets up the columns for the customer table.
         customerIDCol.setCellValueFactory(new PropertyValueFactory<>("id"));
         customerNameCol.setCellValueFactory(new PropertyValueFactory<>("name"));
         customerCountryCol.setCellValueFactory(new PropertyValueFactory<>("country"));
         customerRegionCol.setCellValueFactory(new PropertyValueFactory<>("division"));
 
+        //Sets the items for the appointments table.
         apptTable.setItems(allAppointments);
 
+
+        //Sets up the columns for the appointment tables.
         apptIDCol.setCellValueFactory(new PropertyValueFactory<>("id"));
         apptTitleCol.setCellValueFactory(new PropertyValueFactory<>("title"));
         apptDescriptionCol.setCellValueFactory(new PropertyValueFactory<>("description"));
@@ -202,7 +206,6 @@ public class homeController implements Initializable {
         apptStartCol.setCellValueFactory(new PropertyValueFactory<>("startTime"));
         apptEndCol.setCellValueFactory(new PropertyValueFactory<>("endTime"));
         apptCustomerIDCol.setCellValueFactory(new PropertyValueFactory<>("customerID"));
-
 
     }
 
@@ -222,56 +225,62 @@ public class homeController implements Initializable {
     /**
      * Deletes the customer selected from the table after user confirmation and then adjusts the list of customers to display.
      */
-    public void deleteCustomerButtonClick(ActionEvent actionEvent) throws IOException, SQLException {
+    public void deleteCustomerButtonClick(ActionEvent actionEvent) {
 
+        //Get the item selected and assigns it to a variable of type Customer.
         Customer deleteCheck = (Customer) customerTable.getSelectionModel().getSelectedItem();
 
+        try {
+            //SQL query to select all the appointments with a matching customer id.
+            String sql = "SELECT * FROM appointments WHERE Customer_ID = ?";
+            DBQuery.setPreparedStatement(DBConnect.getConnection(), sql); //Creating the prepared statement object
+            PreparedStatement ps = DBQuery.getPreparedStatement(); //referencing the prepared statement
+            ps.setString(1, String.valueOf(deleteCheck.getId())); //Getting the string representation of the id
+            ps.execute(); //Runs the sql query
+            ResultSet customerID_RS = ps.getResultSet();
 
-        String sql = "SELECT * FROM appointments WHERE Customer_ID = ?";
-        DBQuery.setPreparedStatement(DBConnect.getConnection(), sql); //Creating the prepared statement object
-        PreparedStatement ps = DBQuery.getPreparedStatement(); //referencing the prepared statement
-        ps.setString(1, String.valueOf(deleteCheck.getId())); //Getting the string representation of the id
-        ps.execute(); //Runs the sql query
-        ResultSet customerID_RS = ps.getResultSet();
-
-        if (customerID_RS.next() == true) {
-            displayMessages.errorMsg("This customer has active appointments. Please delete those prior to deleting the customer.");
-
-        } else {
-
-
-            if (deleteCheck == null) {
-
-                displayMessages.errorMsg("No customer was selected. Please select one to delete.");
+            //If the customer has any appointments then show an error
+            if (customerID_RS.next() == true) {
+                displayMessages.errorMsg("This customer has active appointments. Please delete those prior to deleting the customer.");
 
             } else {
-                //Sets a dialog to ensure the user wants to delete
-                var deleteConfirm = new Alert(Alert.AlertType.CONFIRMATION, "", ButtonType.YES, ButtonType.NO, ButtonType.CANCEL);
-                deleteConfirm.setTitle("Confirm Delete");
-                deleteConfirm.setContentText("Are you sure you want to delete the selected item?");
-                deleteConfirm.showAndWait();
-                //If the user presses yes, the customer is deleted from the customer table
-                if (deleteConfirm.getResult() == ButtonType.YES) {
 
-                    //Run a delete query
+                //If the variable has a null value it means nothing was selected and an error is displayed.
+                if (deleteCheck == null) {
 
-                    sql = "DELETE FROM customers WHERE Customer_ID = ?";
-                    DBQuery.setPreparedStatement(DBConnect.getConnection(), sql); //Creating the prepared statement object
-                    PreparedStatement ps1 = DBQuery.getPreparedStatement(); //referencing the prepared statement
-                    ps1.setString(1, String.valueOf(deleteCheck.getId())); //Getting the string representation of the id
-                    ps1.executeUpdate(); //Runs the sql query
+                    displayMessages.errorMsg("No customer was selected. Please select one to delete.");
+
+                } else {
+                    //Sets a dialog to ensure the user wants to delete
+                    var deleteConfirm = new Alert(Alert.AlertType.CONFIRMATION, "", ButtonType.YES, ButtonType.NO, ButtonType.CANCEL);
+                    deleteConfirm.setTitle("Confirm Delete");
+                    deleteConfirm.setContentText("Are you sure you want to delete the selected item?");
+                    deleteConfirm.showAndWait();
+
+                    //If the user presses yes, the customer is deleted from the customer table
+                    if (deleteConfirm.getResult() == ButtonType.YES) {
+
+                        //Run a delete query
+
+                        sql = "DELETE FROM customers WHERE Customer_ID = ?";
+                        DBQuery.setPreparedStatement(DBConnect.getConnection(), sql); //Creating the prepared statement object
+                        PreparedStatement ps1 = DBQuery.getPreparedStatement(); //referencing the prepared statement
+                        ps1.setString(1, String.valueOf(deleteCheck.getId())); //Getting the string representation of the id
+                        ps1.executeUpdate(); //Runs the sql query
 
 
-                    //Update the table view
-                    allCustomers.remove(deleteCheck);
+                        //Update the table view
+                        allCustomers.remove(deleteCheck);
 
-                    //Show a dialog that the delete was successful.
-                    displayMessages.infoMsg("Customer record deleted successfully.");
+                        //Show a dialog that the delete was successful.
+                        displayMessages.infoMsg("Customer record deleted successfully.");
 
+                    }
                 }
             }
+        } catch (SQLException e) {
+            displayMessages.errorMsg("SQL Exception error encountered! " + e.getMessage());
         }
-
     }
 
     /**
@@ -281,7 +290,10 @@ public class homeController implements Initializable {
         ((Stage) (((Node) actionEvent.getSource()).getScene().getWindow())).close();
     }
 
-    /***/
+    /**
+     *Takes the customer selected from the list and passes that data to the modify customer controller and then calls
+     * that controller.
+     */
     public void updateCustomerButtonClick(ActionEvent actionEvent) {
         //The try-catch block is used to avoid a null pointed error if the button is pushed with nothing selected.
 
@@ -320,7 +332,10 @@ public class homeController implements Initializable {
         stage.show();
     }
 
-    /***/
+    /**
+     * Takes the appointment selected from the list and passes that data to the modify appointment controller and then calls
+     * that controller.
+     */
     public void updateAppointmentButtonClick(ActionEvent actionEvent) {
         //The try-catch block is used to avoid a null pointed error if the button is pushed with nothing selected.
 
@@ -351,64 +366,87 @@ public class homeController implements Initializable {
     /**
      * Deletes the selected appointment from the database and updates the display to remove it from view.
      */
-    public void deleteAppointmentClick(ActionEvent actionEvent) throws SQLException {
+    public void deleteAppointmentClick(ActionEvent actionEvent) {
 
-
+        //Assigns the selected appointment to a variable.
         Appointment deleteCheck = (Appointment) apptTable.getSelectionModel().getSelectedItem();
 
-        if (deleteCheck == null) {
+        try {
+            //If the variable for the selected item is null then nothing was selected an an error is displayed.
+            if (deleteCheck == null) {
 
-            displayMessages.errorMsg("No appointment was selected. Please select one to delete.");
+                displayMessages.errorMsg("No appointment was selected. Please select one to delete.");
 
-        } else {
-            //Sets a dialog to ensure the user wants to delete
-            var deleteConfirm = new Alert(Alert.AlertType.CONFIRMATION, "", ButtonType.YES, ButtonType.NO, ButtonType.CANCEL);
-            deleteConfirm.setTitle("Confirm Delete");
-            deleteConfirm.setContentText("Are you sure you want to delete the selected item?");
-            deleteConfirm.showAndWait();
-            //If the user presses yes, the part is deleted from the part table
-            if (deleteConfirm.getResult() == ButtonType.YES) {
+            } else {
+                //Sets a dialog to ensure the user wants to delete
+                var deleteConfirm = new Alert(Alert.AlertType.CONFIRMATION, "", ButtonType.YES, ButtonType.NO, ButtonType.CANCEL);
+                deleteConfirm.setTitle("Confirm Delete");
+                deleteConfirm.setContentText("Are you sure you want to delete the selected item?");
+                deleteConfirm.showAndWait();
+                //If the user presses yes, the part is deleted from the part table
+                if (deleteConfirm.getResult() == ButtonType.YES) {
 
-                //Run a delete query
+                    //Run a delete query
 
-                String sql = "DELETE FROM appointments WHERE Appointment_ID = ?";
-                DBQuery.setPreparedStatement(DBConnect.getConnection(), sql); //Creating the prepared statement object
-                PreparedStatement ps = DBQuery.getPreparedStatement(); //referencing the prepared statement
-                ps.setString(1, String.valueOf(deleteCheck.getId())); //Getting the string representation of the id
-                ps.executeUpdate(); //Runs the sql query
+                    String sql = "DELETE FROM appointments WHERE Appointment_ID = ?";
+                    DBQuery.setPreparedStatement(DBConnect.getConnection(), sql); //Creating the prepared statement object
+                    PreparedStatement ps = DBQuery.getPreparedStatement(); //referencing the prepared statement
+                    ps.setString(1, String.valueOf(deleteCheck.getId())); //Getting the string representation of the id
+                    ps.executeUpdate(); //Runs the sql query
 
 
-                //Update the table view
-                allAppointments.remove(deleteCheck);
+                    //Update the table view
+                    allAppointments.remove(deleteCheck);
+                }
+                //Show a dialog that the delete was successful.
+                displayMessages.apptCanceled(deleteCheck.getId());
             }
-            //Show a dialog that the delete was successful.
-            displayMessages.apptCanceled(deleteCheck.getId());
+        } catch (SQLException e){
+            displayMessages.errorMsg("SQL Exception error encountered! " + e.getMessage());
         }
     }
 
-
+    /**
+     *This shows all the appointments in the table when the view all radio button is clicked.
+     */
     public void viewAllRadioClick(ActionEvent actionEvent) {
         apptTable.setItems(allAppointments);
     }
 
+    /**
+     * This shows all the appointments within a week in the table when the show upcoming week radio button is clicked.
+     * LAMDA expression is used to simplify the creation of a filtered list.
+     */
     public void viewWeekRadioClick(ActionEvent actionEvent) {
+        //Setup a variable for the current date and time.
         LocalDate rightNow = LocalDate.now();
+        //Variable for date one week in the future.
         LocalDate oneWeek = LocalDate.now().plus(7, ChronoUnit.DAYS);
+        //LAMDA - This expression simplifies the filtering of the table to only display appointments within one week.
         FilteredList<Appointment> weeklyAppt = new FilteredList<>(allAppointments, i -> (i.getEndTime().toLocalDate().compareTo(oneWeek)) < 0 && (rightNow.compareTo(i.getEndTime().toLocalDate()) < 0));
+
+        //Set the table to display the weekly filtered list.
         apptTable.setItems(weeklyAppt);
 
     }
 
+    /**
+     * This shows all the appointments within a month in the table when the show upcoming month radio button is clicked.
+     * LAMDA expression is used to simplify the creation of a filtered list.
+     */
     public void viewMonthRadioClick(ActionEvent actionEvent) {
+        //Setup a variable for the current date.
         LocalDate rightNow = LocalDate.now();
+        //Variable for date one month in the future.
         LocalDate oneMonth = LocalDate.now().plus(31, ChronoUnit.DAYS);
+        //LAMDA - This expression simplifies the filtering of the table to only display appointments within one month.
         FilteredList<Appointment> monthlyAppt = new FilteredList<>(allAppointments, i -> (i.getEndTime().toLocalDate().compareTo(oneMonth)) < 0 && (rightNow.compareTo(i.getEndTime().toLocalDate()) < 0));
+        //Set the table to display the monthly filtered list.
         apptTable.setItems(monthlyAppt);
     }
 
     /**
-     *
-     * @param actionEvent
+     * Loads the reports controller.
      */
     public void reportsButtonClick(ActionEvent actionEvent) throws IOException {
         Parent root = FXMLLoader.load(addCustomer.class.getResource("/views/reports.fxml"));

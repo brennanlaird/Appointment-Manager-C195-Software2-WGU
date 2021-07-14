@@ -60,7 +60,7 @@ public class modAppointment implements Initializable {
      * @param modAppt The appointment object selected from the main screen.
 
      */
-    public void receiveAppt(Appointment modAppt) throws SQLException {
+    public void receiveAppt(Appointment modAppt)  {
 
         //Set up an observable list to display the customer names and Contact names
         ObservableList<String> customerList = FXCollections.observableArrayList();
