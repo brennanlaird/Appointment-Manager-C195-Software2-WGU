@@ -37,6 +37,7 @@ public class modAppointment implements Initializable {
     public Button cancelButton;
 
     public Label tzLabel;
+    public Label restrictionLabel;
 
     public ComboBox typeComboBox;
 
@@ -44,6 +45,7 @@ public class modAppointment implements Initializable {
     public ComboBox contactCombo;
     public ComboBox startTimeCombo;
     public ComboBox endTimeCombo;
+
 
     /**
      * Sets up the user interface for the modify appointment form.
@@ -88,12 +90,18 @@ public class modAppointment implements Initializable {
         ZonedDateTime startBusinessLocal = timeZone.startBusinessHours(tzName);
         ZonedDateTime endBusinessLocal = timeZone.endBusinessHours(tzName);
 
+
         //Date formatter to convert the zoned date times to only the times.
         DateTimeFormatter formatToString = DateTimeFormatter.ISO_LOCAL_TIME;
 
         //The zoned date times converted to string values for display.
         String startTimeLocal = startBusinessLocal.format(formatToString);
         String endTimeLocal = endBusinessLocal.format(formatToString);
+
+
+        //Displays the local business times in the label.
+        restrictionLabel.setText("This is from " + startTimeLocal.substring(0, Math.min(startTimeLocal.length(), 5))
+                + " to " + endTimeLocal.substring(0, Math.min(endTimeLocal.length(), 5)) + " local time.");
 
 
         //Setting up variables for use in the loop

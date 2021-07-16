@@ -47,7 +47,7 @@ public class timeZone {
      */
     public static ZonedDateTime endBusinessHours(ZoneId userZone) {
         //Declares the start of business hours in Eastern time
-        ZonedDateTime endBusiness = ZonedDateTime.of(2000, 1, 1, 20, 0, 0, 0, ZoneId.of("US/Eastern"));
+        ZonedDateTime endBusiness = ZonedDateTime.of(2000, 1, 1, 22, 0, 0, 0, ZoneId.of("US/Eastern"));
 
         //Updates the start time based on the users time zone
         ZonedDateTime updateEndTime = endBusiness.withZoneSameInstant(userZone);
@@ -70,6 +70,5 @@ public class timeZone {
 
     }
 
-
-
 }
+

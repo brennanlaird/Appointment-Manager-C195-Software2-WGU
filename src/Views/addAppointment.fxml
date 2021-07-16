@@ -5,7 +5,7 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
 
-<AnchorPane prefHeight="541.0" prefWidth="328.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.addAppointment">
+<AnchorPane prefHeight="542.0" prefWidth="493.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.addAppointment">
    <children>
       <VBox layoutX="27.0" layoutY="69.0" prefHeight="409.0" prefWidth="395.0">
          <children>
@@ -90,5 +90,7 @@
       <Label layoutX="27.0" layoutY="516.0" text="Current Time Zone:" />
       <Label fx:id="tzLabel" layoutX="137.0" layoutY="516.0" text="Show current time zone" />
       <HBox prefHeight="100.0" prefWidth="200.0" />
+      <Label layoutX="350.0" layoutY="301.0" prefHeight="63.0" prefWidth="133.0" text="Appointment times are restricted to 8:00 to 22:00 Eastern time." wrapText="true" />
+      <Label fx:id="restrictionLabel" alignment="TOP_LEFT" layoutX="350.0" layoutY="364.0" prefHeight="75.0" prefWidth="133.0" text="Show local business hours." wrapText="true" />
    </children>
 </AnchorPane>

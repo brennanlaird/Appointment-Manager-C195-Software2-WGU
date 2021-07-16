@@ -17,6 +17,7 @@ import java.sql.SQLException;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.ResourceBundle;
+import java.util.TimeZone;
 
 /**
  * This class controls the adding of appointments to the database.
@@ -34,6 +35,7 @@ public class addAppointment implements Initializable {
     public Button cancelButton;
 
     public Label tzLabel;
+    public Label restrictionLabel;
 
     public ComboBox customerCombo;
     public ComboBox contactCombo;
@@ -42,8 +44,12 @@ public class addAppointment implements Initializable {
     public ComboBox typeComboBox;
 
 
+
+
+
     /**
      * Sets up the user interface for the add appointment form.
+     * LAMDA expression is used to find the users current time zone and return it as a string.
      */
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
@@ -58,15 +64,24 @@ public class addAppointment implements Initializable {
         tzLabel.setText(timeZone.timeZoneName());
 
 
+
         //Sets the combobox to display the available meeting types.
         typeComboBox.setItems(meetingTypes.getMeetTypesCombo());
 
-        //Gets the default time zone to as a ZoneId object
-        ZoneId tzName = ZoneId.of(timeZone.timeZoneName());
+        //Gets the default time zone to as a ZoneId object. Commented out to implement lamda.
+        //ZoneId tzName = ZoneId.of(timeZone.timeZoneName());
+
+        //TODO comment this lamda in javadoc
+        //Lamda expression to return the users time zone as a string.
+        interfaces tz =  () -> {
+            TimeZone systemTZ = TimeZone.getDefault();
+            return systemTZ.getID();};
+
+
 
         //Adjusts the defined business hours to local time to restrict the inputs.
-        ZonedDateTime startBusinessLocal = timeZone.startBusinessHours(tzName);
-        ZonedDateTime endBusinessLocal = timeZone.endBusinessHours(tzName);
+        ZonedDateTime startBusinessLocal = timeZone.startBusinessHours(ZoneId.of(tz.tzName()));
+        ZonedDateTime endBusinessLocal = timeZone.endBusinessHours(ZoneId.of(tz.tzName()));
 
         //Date formatter to convert the zoned date times to only the times.
         DateTimeFormatter formatToString = DateTimeFormatter.ISO_LOCAL_TIME;
@@ -74,6 +89,12 @@ public class addAppointment implements Initializable {
         //The zoned date times converted to string values for display.
         String startTimeLocal = startBusinessLocal.format(formatToString);
         String endTimeLocal = endBusinessLocal.format(formatToString);
+
+        //Displays the local business times in the label.
+        restrictionLabel.setText("This is from " + startTimeLocal.substring(0, Math.min(startTimeLocal.length(), 5))
+                + " to " + endTimeLocal.substring(0, Math.min(endTimeLocal.length(), 5)) + " local time.");
+
+
 
         //Setting up variables for use in the loop
         ZonedDateTime addingTime = startBusinessLocal; //Sets the first time to the local start time.
