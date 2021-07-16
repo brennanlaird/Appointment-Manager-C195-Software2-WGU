@@ -3,6 +3,7 @@ package utilities;
 import javafx.scene.control.Alert;
 
 import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 
 /**
@@ -39,9 +40,9 @@ public class displayMessages {
      *
      * @param id The ID of the appointment that was cancelled/deleted.
      */
-    public static void apptCanceled(int id) {
+    public static void apptCanceled(int id, String apptType) {
         var alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setContentText("Appointment ID " + id + " has been cancelled.");
+        alert.setContentText("Appointment ID " + id + ", a " + apptType + " appointment,  has been cancelled.");
         alert.showAndWait();
     }
 
@@ -51,9 +52,9 @@ public class displayMessages {
      * @param id           The id of the upcoming appointment.
      * @param apptDateTime The start time of the next meeting as a local date time type.
      */
-    public static void apptUpcoming(int id, LocalDateTime apptDateTime) {
+    public static void apptUpcoming(int id, ZonedDateTime apptDateTime) {
 //Create a variable to store right now.
-        LocalDateTime rightNow = LocalDateTime.now();
+        ZonedDateTime rightNow = ZonedDateTime.now();
 //Determine the number of minutes between right now and the next appointment.
         long minutes = ChronoUnit.MINUTES.between(rightNow, apptDateTime);
 //If the next appointment is more than 15 minutes away, display that in an info box.
@@ -64,6 +65,8 @@ public class displayMessages {
             //Display the id and time of the next available appointment.
             infoMsg("Appointment ID " + id + " is at " + apptDateTime.toLocalTime() + " and is within 15 minutes.");
         }
+
+        //infoMsg("Appointment ID " + id + " is at " + apptDateTime.toLocalTime() + " in " + minutes + " minutes.");
 
 
     }

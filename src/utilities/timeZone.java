@@ -1,5 +1,6 @@
 package utilities;
 
+import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.TimeZone;
@@ -54,4 +55,21 @@ public class timeZone {
         //returns the updated time to the calling code.
         return updateEndTime;
     }
+
+    /**
+     * This method takes a local date time object and converts it to the users local time from UTC.
+     * @param inputTime The local date time object in UTC time from the database.
+     * @return The local time in the users default time zone.
+     */
+    public static ZonedDateTime convertToLocal(LocalDateTime inputTime){
+
+        ZonedDateTime localTime = ZonedDateTime.of(inputTime, ZoneId.of("UTC")).withZoneSameInstant(ZoneId.of(timeZoneName()));
+
+        return localTime;
+
+
+    }
+
+
+
 }

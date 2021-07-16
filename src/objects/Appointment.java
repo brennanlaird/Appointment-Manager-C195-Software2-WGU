@@ -6,6 +6,7 @@ import java.time.ZonedDateTime;
  * This class sets up appointment objects.
  */
 public class Appointment {
+    private String date;
     private int id;
     private String title;
     private String description;
@@ -19,11 +20,13 @@ public class Appointment {
     private int userID;
     private int contactID;
     private String contact;
+    private String sTime;
+    private String eTime;
 
 //Constructor for the appointment class.
     public Appointment(int id, String title, String description, String location, String type,
                        ZonedDateTime startTime, ZonedDateTime endTime, String createdBy, String lastUpdateBy,
-                       int customerID, int userID, int contactID, String contact) {
+                       int customerID, int userID, int contactID, String contact, String date, String sTime, String eTime) {
         this.id = id;
         this.title = title;
         this.description = description;
@@ -37,6 +40,9 @@ public class Appointment {
         this.userID = userID;
         this.contactID = contactID;
         this.contact = contact;
+        this.date = date;
+        this.sTime = sTime;
+        this.eTime = eTime;
     }
 
     /**
@@ -245,5 +251,31 @@ public class Appointment {
      */
     public void setContact(String contact) {
         this.contact = contact;
+    }
+
+
+    public String getDate() {
+        return date;
+    }
+
+    public void setDate(String date) {
+        this.date = date;
+    }
+
+    public String getSTime() {
+        return sTime;
+    }
+
+    public void setSTime(String sTime) {
+        this.sTime = sTime;
+    }
+
+    public String getETime() {
+        return eTime;
+    }
+
+
+    public void setETime(String eTime) {
+        this.eTime = eTime;
     }
 }

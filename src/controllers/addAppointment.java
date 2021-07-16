@@ -59,7 +59,7 @@ public class addAppointment implements Initializable {
 
 
         //Sets the combobox to display the available meeting types.
-        typeComboBox.setItems(apptType.meetingTypes);
+        typeComboBox.setItems(meetingTypes.getMeetTypesCombo());
 
         //Gets the default time zone to as a ZoneId object
         ZoneId tzName = ZoneId.of(timeZone.timeZoneName());
@@ -366,31 +366,36 @@ public class addAppointment implements Initializable {
                     ZonedDateTime dbZonedStart = ZonedDateTime.of(dbStartDate, dbLocalStart, ZoneId.of("UTC"));
                     ZonedDateTime dbZonedEnd = ZonedDateTime.of(dbEndDate, dbLocalEnd, ZoneId.of("UTC"));
 
-                    //If the date and time of the start times match, then raise the overlap flag
-                    if (dbZonedStart.equals(utcStart)) {
-                        overlapFlag = true;
-                    }
+                    //Only proceed if the overlap flag is false to prevent duplicate messages.
+                    if (!overlapFlag) {
+                        //If the date and time of the start times match, then raise the overlap flag
+                        if (dbZonedStart.equals(utcStart)) {
+                            overlapFlag = true;
+                        }
 
-                    //If the end date and time are equal, there is an overlap.
-                    if (dbZonedEnd.equals(utcEnd)) {
-                        overlapFlag = true;
-                    }
+                        //If the end date and time are equal, there is an overlap.
+                        if (dbZonedEnd.equals(utcEnd)) {
+                            overlapFlag = true;
+                        }
 
-                    //If the start time is between times of another meeting.
-                    if (utcStart.isAfter(dbZonedStart) && utcStart.isBefore(dbZonedEnd)) {
-                        overlapFlag = true;
-                    }
+                        //If the start time is between times of another meeting.
+                        if (utcStart.isAfter(dbZonedStart) && utcStart.isBefore(dbZonedEnd)) {
+                            overlapFlag = true;
+                        }
 
-                    //If the end time falls between another meeting.
-                    if (utcEnd.isAfter(dbZonedStart) && utcEnd.isBefore(dbZonedEnd)) {
-                        overlapFlag = true;
+                        //If the end time falls between another meeting.
+                        if (utcEnd.isAfter(dbZonedStart) && utcEnd.isBefore(dbZonedEnd)) {
+                            overlapFlag = true;
+                        }
+                        //If the the start is before and then end is after
+                        if (utcStart.isBefore(dbZonedStart) && utcEnd.isAfter(dbZonedEnd)) {
+                            overlapFlag = true;
+                        }
+                        //Error message if the overlap flag is raised.
+                        if (overlapFlag) {
+                            displayMessages.errorMsg("The times entered overlaps with another meeting. Please adjust the times and try again.");
+                        }
                     }
-
-                    //Error message if the overlap flag is raised.
-                    if (overlapFlag) {
-                        displayMessages.errorMsg("The times entered overlaps with another meeting. Please adjust the times and try again.");
-                    }
-
 
                 }
 

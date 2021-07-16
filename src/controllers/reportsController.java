@@ -44,6 +44,7 @@ public class reportsController implements Initializable {
     public TableColumn apptStartCol;
     public TableColumn apptEndCol;
     public TableColumn customerIDCol;
+    public TableColumn dateCol;
 
     public ComboBox contactNameCombo;
 
@@ -55,6 +56,7 @@ public class reportsController implements Initializable {
     public TableColumn apptStartColCustomer;
     public TableColumn apptEndColCustomer;
     public TableColumn contactIDColCustomer;
+    public TableColumn dateColCustomer;
 
     public ComboBox customerCombo;
 
@@ -66,6 +68,7 @@ public class reportsController implements Initializable {
     public TableColumn testApptViewCol2;
 
     public Label tableHeader;
+
 
 
     //Setup the observable lists for the combo boxes.
@@ -198,13 +201,13 @@ public class reportsController implements Initializable {
                 //This is used to parse the strings from the database into date time objects in Java.
                 DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
-                //Parse the start time into a local date time and then change it to a zoned date time
+                //Parse the start time into a local date time and then change it to a zoned date time of the local timezone
                 LocalDateTime startTime = LocalDateTime.parse(appointmentRS.getString("Start"), formatter);
-                ZonedDateTime apptStart = ZonedDateTime.of(startTime, ZoneId.of("UTC"));
+                ZonedDateTime apptStart = timeZone.convertToLocal(startTime);
 
                 //Parse the end time into a local date time and then change it to a zoned date time
                 LocalDateTime endTime = LocalDateTime.parse(appointmentRS.getString("End"), formatter);
-                ZonedDateTime apptEnd = ZonedDateTime.of(endTime, ZoneId.of("UTC"));
+                ZonedDateTime apptEnd = timeZone.convertToLocal(endTime);
 
                 //Get the name of the users current time zone.
                 ZoneId tz = ZoneId.of(timeZone.timeZoneName());
@@ -340,11 +343,13 @@ public class reportsController implements Initializable {
 
                 //Parse the start time into a local date time and then change it to a zoned date time
                 LocalDateTime startTime = LocalDateTime.parse(appointmentRS.getString("Start"), formatter);
-                ZonedDateTime apptStart = ZonedDateTime.of(startTime, ZoneId.of("UTC"));
+                ZonedDateTime apptStart = timeZone.convertToLocal(startTime);
+
 
                 //Parse the end time into a local date time and then change it to a zoned date time
                 LocalDateTime endTime = LocalDateTime.parse(appointmentRS.getString("End"), formatter);
-                ZonedDateTime apptEnd = ZonedDateTime.of(endTime, ZoneId.of("UTC"));
+                ZonedDateTime apptEnd = timeZone.convertToLocal(endTime);
+
 
                 //Get the name of the users current time zone.
                 ZoneId tz = ZoneId.of(timeZone.timeZoneName());
@@ -352,6 +357,10 @@ public class reportsController implements Initializable {
 
                 ZonedDateTime apptEndlocal = ZonedDateTime.ofInstant(apptEnd.toInstant(), tz);
 
+
+                String apptDate = apptStart.toLocalDate().toString();
+                String apptStartTime = apptStart.toLocalTime().toString();
+                String apptEndTime = apptEnd.toLocalTime().toString();
 
                 String apptCreator = appointmentRS.getString("Created_By");
                 String apptUpdater = appointmentRS.getString("Last_Updated_By");
@@ -363,7 +372,7 @@ public class reportsController implements Initializable {
 
                 //Create a new appointment and add it to the list.
                 Appointment temp = new Appointment(apptID, apptTitle, apptDescription, apptLocation, apptType, apptStart,
-                        apptEnd, apptCreator, apptUpdater, apptCustomerID, apptUserID, apptContactID, apptContact);
+                        apptEnd, apptCreator, apptUpdater, apptCustomerID, apptUserID, apptContactID, apptContact, apptDate, apptStartTime, apptEndTime);
                 apptList.add(temp);
 
             }
@@ -379,10 +388,10 @@ public class reportsController implements Initializable {
         apptTitleCol.setCellValueFactory(new PropertyValueFactory<>("title"));
         apptTypeCol.setCellValueFactory(new PropertyValueFactory<>("type"));
         apptDescriptionCol.setCellValueFactory(new PropertyValueFactory<>("description"));
-        apptStartCol.setCellValueFactory(new PropertyValueFactory<>("startTime"));
-        apptEndCol.setCellValueFactory(new PropertyValueFactory<>("endTime"));
+        apptStartCol.setCellValueFactory(new PropertyValueFactory<>("sTime"));
+        apptEndCol.setCellValueFactory(new PropertyValueFactory<>("eTime"));
         customerIDCol.setCellValueFactory(new PropertyValueFactory<>("customerID"));
-
+        dateCol.setCellValueFactory(new PropertyValueFactory<>("date"));
 
     }
 
@@ -444,17 +453,21 @@ public class reportsController implements Initializable {
 
                 //Parse the start time into a local date time and then change it to a zoned date time
                 LocalDateTime startTime = LocalDateTime.parse(appointmentRS.getString("Start"), formatter);
-                ZonedDateTime apptStart = ZonedDateTime.of(startTime, ZoneId.of("UTC"));
+                ZonedDateTime apptStart = timeZone.convertToLocal(startTime);
+
 
                 //Parse the end time into a local date time and then change it to a zoned date time
                 LocalDateTime endTime = LocalDateTime.parse(appointmentRS.getString("End"), formatter);
-                ZonedDateTime apptEnd = ZonedDateTime.of(endTime, ZoneId.of("UTC"));
+                ZonedDateTime apptEnd = timeZone.convertToLocal(endTime);
 
                 //Get the name of the users current time zone.
                 ZoneId tz = ZoneId.of(timeZone.timeZoneName());
 
                 ZonedDateTime apptEndlocal = ZonedDateTime.ofInstant(apptEnd.toInstant(), tz);
 
+                String apptDate = apptStart.toLocalDate().toString();
+                String apptStartTime = apptStart.toLocalTime().toString();
+                String apptEndTime = apptEnd.toLocalTime().toString();
 
                 String apptCreator = appointmentRS.getString("Created_By");
                 String apptUpdater = appointmentRS.getString("Last_Updated_By");
@@ -467,7 +480,7 @@ public class reportsController implements Initializable {
 
                 //Create an appointment object and add it to the list.
                 Appointment temp = new Appointment(apptID, apptTitle, apptDescription, apptLocation, apptType, apptStart,
-                        apptEnd, apptCreator, apptUpdater, apptCustomerID, apptUserID, apptContactID, apptContact);
+                        apptEnd, apptCreator, apptUpdater, apptCustomerID, apptUserID, apptContactID, apptContact, apptDate, apptStartTime, apptEndTime);
                 apptList.add(temp);
 
             }
@@ -483,9 +496,10 @@ public class reportsController implements Initializable {
         apptTitleColCustomer.setCellValueFactory(new PropertyValueFactory<>("title"));
         apptTypeColCustomer.setCellValueFactory(new PropertyValueFactory<>("type"));
         apptDescriptionColCustomer.setCellValueFactory(new PropertyValueFactory<>("description"));
-        apptStartColCustomer.setCellValueFactory(new PropertyValueFactory<>("startTime"));
-        apptEndColCustomer.setCellValueFactory(new PropertyValueFactory<>("endTime"));
+        apptStartColCustomer.setCellValueFactory(new PropertyValueFactory<>("sTime"));
+        apptEndColCustomer.setCellValueFactory(new PropertyValueFactory<>("eTime"));
         contactIDColCustomer.setCellValueFactory(new PropertyValueFactory<>("customerID"));
+        dateColCustomer.setCellValueFactory(new PropertyValueFactory<>("date"));
 
 
     }

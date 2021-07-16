@@ -34,7 +34,7 @@
             </RadioButton>
          </children>
       </HBox>
-      <AnchorPane fx:id="contactPane" layoutX="14.0" layoutY="86.0" prefHeight="462.0" prefWidth="889.0" visible="false">
+      <AnchorPane fx:id="contactPane" layoutX="14.0" layoutY="86.0" prefHeight="462.0" prefWidth="889.0">
          <children>
             <TableView fx:id="contactTable" layoutX="14.0" layoutY="49.0" prefHeight="412.0" prefWidth="873.0">
               <columns>
@@ -42,9 +42,10 @@
                   <TableColumn fx:id="apptTitleCol" prefWidth="115.0" text="Title" />
                   <TableColumn fx:id="apptTypeCol" prefWidth="100.0" text="Type" />
                   <TableColumn fx:id="apptDescriptionCol" prefWidth="184.0" text="Description" />
-                  <TableColumn fx:id="apptStartCol" prefWidth="120.0" text="Start Time &amp; Date" />
-                  <TableColumn fx:id="apptEndCol" prefWidth="128.0" text="End Time &amp; Date" />
-                  <TableColumn fx:id="customerIDCol" prefWidth="125.0" text="Customer ID" />
+                  <TableColumn fx:id="apptStartCol" prefWidth="84.0" text="Start Time" />
+                  <TableColumn fx:id="apptEndCol" prefWidth="105.0" text="End Time" />
+                  <TableColumn fx:id="dateCol" prefWidth="100.0" text="Date" />
+                  <TableColumn fx:id="customerIDCol" prefWidth="75.0" text="Customer ID" />
               </columns>
             </TableView>
             <ComboBox fx:id="contactNameCombo" layoutX="199.0" layoutY="14.0" onAction="#contactNameComboChange" prefWidth="150.0" />
@@ -60,14 +61,15 @@
                   <TableColumn fx:id="apptTitleColCustomer" prefWidth="115.0" text="Title" />
                   <TableColumn fx:id="apptTypeColCustomer" prefWidth="100.0" text="Type" />
                   <TableColumn fx:id="apptDescriptionColCustomer" prefWidth="184.0" text="Description" />
-                  <TableColumn fx:id="apptStartColCustomer" prefWidth="120.0" text="Start Time &amp; Date" />
-                  <TableColumn fx:id="apptEndColCustomer" prefWidth="128.0" text="End Time &amp; Date" />
-                  <TableColumn fx:id="contactIDColCustomer" prefWidth="125.0" text="Contact ID" />
+                  <TableColumn fx:id="apptStartColCustomer" prefWidth="77.0" text="Start Time" />
+                  <TableColumn fx:id="apptEndColCustomer" prefWidth="105.0" text="End Time" />
+                  <TableColumn fx:id="dateColCustomer" prefWidth="100.0" text="Date" />
+                  <TableColumn fx:id="contactIDColCustomer" prefWidth="90.0" text="Contact ID" />
               </columns>
             </TableView>
          </children>
       </AnchorPane>
-      <AnchorPane fx:id="apptTypePane" layoutX="14.0" layoutY="80.0" prefHeight="477.0" prefWidth="889.0">
+      <AnchorPane fx:id="apptTypePane" layoutX="14.0" layoutY="80.0" prefHeight="477.0" prefWidth="889.0" visible="false">
          <children>
             <ComboBox fx:id="monthComboBox" layoutX="14.0" layoutY="27.0" onAction="#monthComboBoxChange" prefWidth="150.0" />
             <Label fx:id="tableHeader" layoutX="372.0" layoutY="26.0" text="Appointment Counts">

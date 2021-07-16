@@ -53,6 +53,7 @@ public class homeController implements Initializable {
     public TableColumn apptStartCol;
     public TableColumn apptEndCol;
     public TableColumn apptCustomerIDCol;
+    public TableColumn apptDateCol;
 
     public Button addAppointmentButton;
     public Button updateAppointmentButton;
@@ -64,6 +65,7 @@ public class homeController implements Initializable {
     public RadioButton viewWeekRadio;
     public RadioButton viewMonthRadio;
     public ToggleGroup apptFilter;
+
 
 
     //Setting up observable lists for displaying data.
@@ -118,7 +120,7 @@ public class homeController implements Initializable {
             ResultSet appointmentRS = ps.getResultSet(); //Setting the results of the query to a result set
 
             //Declares a local date time as null to store the minimum start time.
-            LocalDateTime minStart = null;
+            ZonedDateTime minStart = null;
             //Declares a null appointment object to store the information about the next appointment.
             Appointment nextAppt = null;
 
@@ -136,13 +138,26 @@ public class homeController implements Initializable {
                 //Get the start time from the result set by parsing the string based on the formatter.
                 LocalDateTime startTime = LocalDateTime.parse(appointmentRS.getString("Start"), formatter);
 
+                //Convert the time to local time of the user.
+                ZonedDateTime apptStart = timeZone.convertToLocal(startTime);
 
-                ZonedDateTime apptStart = ZonedDateTime.of(startTime, ZoneId.of("UTC"));
+
+                //ZonedDateTime apptStart = ZonedDateTime.of(startTime, ZoneId.of("UTC"));
+
+
+                //System.out.println(startTime + " and " + apptStart);
+
 
                 //Create variables to store the appointment end time as a local date time based on the formatter and
                 //as a zoned date time.
                 LocalDateTime endTime = LocalDateTime.parse(appointmentRS.getString("End"), formatter);
-                ZonedDateTime apptEnd = ZonedDateTime.of(endTime, ZoneId.of("UTC"));
+
+                //Convert the time to local time of the user.
+                ZonedDateTime apptEnd = timeZone.convertToLocal(endTime);
+
+                String apptDate = apptStart.toLocalDate().toString();
+                String apptStartTime = apptStart.toLocalTime().toString();
+                String apptEndTime = apptEnd.toLocalTime().toString();
 
                 //Assign additional values from the result set to variables to create an appointment object.
                 String apptCreator = appointmentRS.getString("Created_By");
@@ -156,11 +171,20 @@ public class homeController implements Initializable {
 
                 //Create a new appointment then add it to the list to display.
                 Appointment temp = new Appointment(apptID, apptTitle, apptDescription, apptLocation, apptType, apptStart,
-                        apptEnd, apptCreator, apptUpdater, apptCustomerID, apptUserID, apptContactID, apptContact);
+                        apptEnd, apptCreator, apptUpdater, apptCustomerID, apptUserID, apptContactID, apptContact, apptDate, apptStartTime, apptEndTime);
                 allAppointments.add(temp);
 
                 //Find the start time of the next meeting.
-                //These IF statements find the next meeting. This is used to flag appoitnments within 15-minutes.
+                //These IF statements find the next meeting. This is used to flag appointments within 15-minutes.
+
+                if (minStart == null && apptStart.isAfter(ZonedDateTime.now())) {
+                    minStart = apptStart;
+                    nextAppt = temp;
+                } else if (minStart != null && apptStart.isBefore(minStart) && apptStart.isAfter(ZonedDateTime.now())) {
+                    minStart = apptStart;
+                    nextAppt = temp;
+                }
+                /*
                 if (minStart == null && startTime.isAfter(LocalDateTime.now())) {
                     minStart = startTime;
                     nextAppt = temp;
@@ -168,7 +192,7 @@ public class homeController implements Initializable {
                     minStart = startTime;
                     nextAppt = temp;
                 }
-
+*/
             }
 
             //Checks the login flag and displays an upcoming appointment notification .
@@ -203,9 +227,10 @@ public class homeController implements Initializable {
         apptLocationCol.setCellValueFactory(new PropertyValueFactory<>("location"));
         apptContactCol.setCellValueFactory(new PropertyValueFactory<>("contact"));
         apptTypeCol.setCellValueFactory(new PropertyValueFactory<>("type"));
-        apptStartCol.setCellValueFactory(new PropertyValueFactory<>("startTime"));
-        apptEndCol.setCellValueFactory(new PropertyValueFactory<>("endTime"));
+        apptStartCol.setCellValueFactory(new PropertyValueFactory<>("sTime"));
+        apptEndCol.setCellValueFactory(new PropertyValueFactory<>("eTime"));
         apptCustomerIDCol.setCellValueFactory(new PropertyValueFactory<>("customerID"));
+        apptDateCol.setCellValueFactory(new PropertyValueFactory<>("date"));
 
     }
 
@@ -399,7 +424,7 @@ public class homeController implements Initializable {
                     allAppointments.remove(deleteCheck);
                 }
                 //Show a dialog that the delete was successful.
-                displayMessages.apptCanceled(deleteCheck.getId());
+                displayMessages.apptCanceled(deleteCheck.getId(), deleteCheck.getType());
             }
         } catch (SQLException e){
             displayMessages.errorMsg("SQL Exception error encountered! " + e.getMessage());

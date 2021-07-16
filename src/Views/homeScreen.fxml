@@ -18,17 +18,18 @@
       </TableView>
       <Button fx:id="updateCustomerButton" layoutX="474.0" layoutY="153.0" mnemonicParsing="false" onAction="#updateCustomerButtonClick" prefHeight="25.0" prefWidth="115.0" text="Update Customer" />
       <Button fx:id="deleteCustomerButton" layoutX="474.0" layoutY="202.0" mnemonicParsing="false" onAction="#deleteCustomerButtonClick" prefHeight="25.0" prefWidth="115.0" text="Delete Customer" />
-      <TableView fx:id="apptTable" layoutX="39.0" layoutY="350.0" prefHeight="280.0" prefWidth="902.0">
+      <TableView fx:id="apptTable" layoutX="39.0" layoutY="350.0" prefHeight="280.0" prefWidth="945.0">
         <columns>
           <TableColumn fx:id="apptIDCol" prefWidth="104.0" text="Appointment ID" />
           <TableColumn fx:id="apptTitleCol" prefWidth="102.0" text="Title" />
             <TableColumn fx:id="apptDescriptionCol" minWidth="6.0" prefWidth="105.0" text="Description" />
             <TableColumn fx:id="apptLocationCol" minWidth="0.0" prefWidth="92.0" text="Location" />
             <TableColumn fx:id="apptContactCol" prefWidth="96.0" text="Contact" />
-            <TableColumn fx:id="apptTypeCol" prefWidth="93.0" text="Type" />
-            <TableColumn fx:id="apptStartCol" prefWidth="112.0" text="Start Date &amp; Time" />
-            <TableColumn fx:id="apptEndCol" prefWidth="120.0" text="End Date &amp; Time" />
-            <TableColumn fx:id="apptCustomerIDCol" prefWidth="77.0" text="Customer ID" />
+            <TableColumn fx:id="apptTypeCol" prefWidth="94.0" text="Type" />
+            <TableColumn fx:id="apptStartCol" prefWidth="93.0" text="Start Time" />
+            <TableColumn fx:id="apptEndCol" minWidth="7.0" prefWidth="94.0" text="End Time" />
+            <TableColumn fx:id="apptDateCol" text="Date" />
+            <TableColumn fx:id="apptCustomerIDCol" prefWidth="82.0" text="Customer ID" />
         </columns>
       </TableView>
       <Button fx:id="addAppointmentButton" layoutX="717.0" layoutY="99.0" mnemonicParsing="false" onAction="#addAppointmentButtonClick" text="Add Appointment" />
