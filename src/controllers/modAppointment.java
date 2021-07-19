@@ -16,6 +16,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoField;
 import java.util.ResourceBundle;
 import java.util.TimeZone;
 
@@ -304,16 +305,52 @@ public class modAppointment implements Initializable {
         ZonedDateTime localEndTime = ZonedDateTime.of(formDate, localTimeEnd, tzName);
 
         //Creates a time that is used to determine the crossover of days in the London time zone.
-        ZonedDateTime crossOverTime = localStartTime.with(LocalTime.of(23, 00));
+        ZonedDateTime crossOverTime = localStartTime.with(LocalTime.of(23, 59));
+
+
+
+        //Variables to flag if the times for the appointments are on the same date.
+        //For London time, if the start tim e is before midnight and the end is midnight or later, the dates need to be adjusted.
+        boolean timesSameDate;
+        boolean startAfterMid = false;
+        boolean endAfterMid = false;
+
 
         //If the time zone is London an adjustment may need to be made.
         if (timeZone.timeZoneName().equals("Europe/London")) {
 
-            //If the unaltered time appears as before the start time and the altered time is after the crossover time
-            //An adjustment is made to the next day.
-            if (localEndTime.isBefore(localStartTime) && localEndTime.plusDays(1).isAfter(crossOverTime))
+
+
+            //Boolean variables to detect if the start time is after midnight
+            boolean timeMidnight = localStartTime.equals(localStartTime.with(ChronoField.HOUR_OF_DAY, 0));
+            boolean timeOne = localStartTime.equals(localStartTime.with(ChronoField.HOUR_OF_DAY, 1));
+            boolean timeTwo = localStartTime.equals(localStartTime.with(ChronoField.HOUR_OF_DAY, 2));
+            boolean timeThree = localStartTime.equals(localStartTime.with(ChronoField.HOUR_OF_DAY, 3));
+
+            //If the start time entered is midnight or after
+            if (timeMidnight || timeOne || timeTwo || timeThree) {
+                startAfterMid = true;
+            }
+
+            //Reevaluate the boolean variable for the end time.
+            timeMidnight = localEndTime.equals(localEndTime.with(ChronoField.HOUR_OF_DAY, 0));
+            timeOne = localEndTime.equals(localEndTime.with(ChronoField.HOUR_OF_DAY, 1));
+            timeTwo = localEndTime.equals(localEndTime.with(ChronoField.HOUR_OF_DAY, 2));
+            timeThree = localEndTime.equals(localEndTime.with(ChronoField.HOUR_OF_DAY, 3));
+
+
+            if (timeMidnight || timeOne || timeTwo || timeThree) {
+                //if the times are all in the range for London after midnight, the times occur on the same date.
+
+                endAfterMid = true;
+            }
+
+            if(endAfterMid && !startAfterMid) {
+
 
                 localEndTime = localEndTime.plusDays(1);
+            }
+
 
         }
 
@@ -345,7 +382,11 @@ public class modAppointment implements Initializable {
 
 
         //Business hours converted to local time.
-        ZonedDateTime startTimeLocal = timeZone.startBusinessHours(ZoneId.of(timeZone.timeZoneName()),localStartTime);
+        ZonedDateTime startTimeLocal = null;
+        if (startAfterMid && endAfterMid){
+            startTimeLocal = timeZone.startBusinessHours(ZoneId.of(timeZone.timeZoneName()), localStartTime.minusDays(1));} else {
+            startTimeLocal = timeZone.startBusinessHours(ZoneId.of(timeZone.timeZoneName()), localStartTime);
+        }
         ZonedDateTime endTimeLocal = timeZone.endBusinessHours(ZoneId.of(timeZone.timeZoneName()), localEndTime);
 
 
