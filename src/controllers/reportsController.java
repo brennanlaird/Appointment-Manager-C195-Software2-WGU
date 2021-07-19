@@ -44,7 +44,8 @@ public class reportsController implements Initializable {
     public TableColumn apptStartCol;
     public TableColumn apptEndCol;
     public TableColumn customerIDCol;
-    public TableColumn dateCol;
+    public TableColumn apptEndDateCol;
+    public TableColumn apptStartDateCol;
 
     public ComboBox contactNameCombo;
 
@@ -56,7 +57,8 @@ public class reportsController implements Initializable {
     public TableColumn apptStartColCustomer;
     public TableColumn apptEndColCustomer;
     public TableColumn contactIDColCustomer;
-    public TableColumn dateColCustomer;
+    public TableColumn apptStartDateColCustomer;
+    public TableColumn apptEndDateColCustomer;
 
     public ComboBox customerCombo;
 
@@ -358,7 +360,8 @@ public class reportsController implements Initializable {
                 ZonedDateTime apptEndlocal = ZonedDateTime.ofInstant(apptEnd.toInstant(), tz);
 
 
-                String apptDate = apptStart.toLocalDate().toString();
+                String apptStartDate = apptStart.toLocalDate().toString();
+                String apptEndDate = apptEnd.toLocalDate().toString();
                 String apptStartTime = apptStart.toLocalTime().toString();
                 String apptEndTime = apptEnd.toLocalTime().toString();
 
@@ -372,7 +375,7 @@ public class reportsController implements Initializable {
 
                 //Create a new appointment and add it to the list.
                 Appointment temp = new Appointment(apptID, apptTitle, apptDescription, apptLocation, apptType, apptStart,
-                        apptEnd, apptCreator, apptUpdater, apptCustomerID, apptUserID, apptContactID, apptContact, apptDate, apptStartTime, apptEndTime);
+                        apptEnd, apptCreator, apptUpdater, apptCustomerID, apptUserID, apptContactID, apptContact, apptStartDate, apptEndDate, apptStartTime, apptEndTime);
                 apptList.add(temp);
 
             }
@@ -391,8 +394,8 @@ public class reportsController implements Initializable {
         apptStartCol.setCellValueFactory(new PropertyValueFactory<>("sTime"));
         apptEndCol.setCellValueFactory(new PropertyValueFactory<>("eTime"));
         customerIDCol.setCellValueFactory(new PropertyValueFactory<>("customerID"));
-        dateCol.setCellValueFactory(new PropertyValueFactory<>("date"));
-
+        apptStartDateCol.setCellValueFactory(new PropertyValueFactory<>("startDate"));
+        apptEndDateCol.setCellValueFactory(new PropertyValueFactory<>("endDate"));
     }
 
     /**
@@ -465,7 +468,8 @@ public class reportsController implements Initializable {
 
                 ZonedDateTime apptEndlocal = ZonedDateTime.ofInstant(apptEnd.toInstant(), tz);
 
-                String apptDate = apptStart.toLocalDate().toString();
+                String apptStartDate = apptStart.toLocalDate().toString();
+                String apptEndDate = apptEnd.toLocalDate().toString();
                 String apptStartTime = apptStart.toLocalTime().toString();
                 String apptEndTime = apptEnd.toLocalTime().toString();
 
@@ -480,7 +484,7 @@ public class reportsController implements Initializable {
 
                 //Create an appointment object and add it to the list.
                 Appointment temp = new Appointment(apptID, apptTitle, apptDescription, apptLocation, apptType, apptStart,
-                        apptEnd, apptCreator, apptUpdater, apptCustomerID, apptUserID, apptContactID, apptContact, apptDate, apptStartTime, apptEndTime);
+                        apptEnd, apptCreator, apptUpdater, apptCustomerID, apptUserID, apptContactID, apptContact, apptStartDate, apptEndDate, apptStartTime, apptEndTime);
                 apptList.add(temp);
 
             }
@@ -499,7 +503,8 @@ public class reportsController implements Initializable {
         apptStartColCustomer.setCellValueFactory(new PropertyValueFactory<>("sTime"));
         apptEndColCustomer.setCellValueFactory(new PropertyValueFactory<>("eTime"));
         contactIDColCustomer.setCellValueFactory(new PropertyValueFactory<>("customerID"));
-        dateColCustomer.setCellValueFactory(new PropertyValueFactory<>("date"));
+        apptEndDateColCustomer.setCellValueFactory(new PropertyValueFactory<>("startDate"));
+        apptStartDateColCustomer.setCellValueFactory(new PropertyValueFactory<>("endDate"));
 
 
     }

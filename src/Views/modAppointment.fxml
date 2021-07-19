@@ -5,7 +5,7 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
 
-<AnchorPane prefHeight="541.0" prefWidth="493.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.modAppointment">
+<AnchorPane prefHeight="612.0" prefWidth="493.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.modAppointment">
    <children>
       <VBox layoutX="27.0" layoutY="69.0" prefHeight="409.0" prefWidth="395.0">
          <children>
@@ -71,9 +71,15 @@
                   <ComboBox fx:id="contactCombo" prefWidth="150.0" />
                </children>
             </HBox>
+            <HBox layoutX="10.0" layoutY="370.0" prefHeight="40.0" prefWidth="200.0">
+               <children>
+                  <Label prefWidth="150.0" text="User" />
+                  <ComboBox fx:id="userCombo" prefWidth="150.0" />
+               </children>
+            </HBox>
          </children>
       </VBox>
-      <HBox layoutX="57.0" layoutY="474.0" prefHeight="50.0" prefWidth="328.0" AnchorPane.leftAnchor="20.0" AnchorPane.rightAnchor="20.0">
+      <HBox layoutX="20.0" layoutY="541.0" prefHeight="50.0" prefWidth="328.0" AnchorPane.leftAnchor="20.0" AnchorPane.rightAnchor="20.0">
          <children>
             <Button fx:id="saveButton" mnemonicParsing="false" onAction="#saveButtonClick" text="Save">
                <HBox.margin>
@@ -87,10 +93,9 @@
             <Font name="System Bold" size="24.0" />
          </font>
       </Label>
-      <Label layoutX="27.0" layoutY="516.0" text="Current Time Zone:" />
-      <Label fx:id="tzLabel" layoutX="137.0" layoutY="516.0" text="Show current time zone" />
-      <HBox prefHeight="100.0" prefWidth="200.0" />
-      <Label layoutX="337.0" layoutY="308.0" prefHeight="60.0" prefWidth="133.0" text="Appointment times are restricted to 8:00 to 22:00 Eastern time." wrapText="true" />
-      <Label fx:id="restrictionLabel" alignment="TOP_LEFT" layoutX="338.0" layoutY="373.0" prefHeight="60.0" prefWidth="133.0" text="Show local business hours." wrapText="true" />
+      <Label layoutX="27.0" layoutY="583.0" text="Current Time Zone:" />
+      <Label fx:id="tzLabel" layoutX="137.0" layoutY="583.0" text="Show current time zone" />
+      <Label layoutX="337.0" layoutY="289.0" prefHeight="60.0" prefWidth="133.0" text="Appointment times are restricted to 8:00 to 22:00 Eastern time." wrapText="true" />
+      <Label fx:id="restrictionLabel" alignment="TOP_LEFT" layoutX="338.0" layoutY="354.0" prefHeight="60.0" prefWidth="133.0" text="Show local business hours." wrapText="true" />
    </children>
 </AnchorPane>

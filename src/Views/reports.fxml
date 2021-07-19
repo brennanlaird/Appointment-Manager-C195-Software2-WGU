@@ -5,7 +5,7 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
 
-<AnchorPane prefHeight="600.0" prefWidth="910.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.reportsController">
+<AnchorPane prefHeight="600.0" prefWidth="1022.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.reportsController">
    <children>
       <Label layoutX="334.0" layoutY="14.0" text="Reports">
          <font>
@@ -34,36 +34,38 @@
             </RadioButton>
          </children>
       </HBox>
-      <AnchorPane fx:id="contactPane" layoutX="14.0" layoutY="86.0" prefHeight="462.0" prefWidth="889.0">
+      <AnchorPane fx:id="contactPane" layoutX="14.0" layoutY="86.0" prefHeight="462.0" prefWidth="889.0" visible="false">
          <children>
-            <TableView fx:id="contactTable" layoutX="14.0" layoutY="49.0" prefHeight="412.0" prefWidth="873.0">
+            <TableView fx:id="contactTable" layoutX="14.0" layoutY="49.0" prefHeight="412.0" prefWidth="980.0">
               <columns>
                 <TableColumn fx:id="apptIDCol" prefWidth="100.0" text="Appointment ID" />
                   <TableColumn fx:id="apptTitleCol" prefWidth="115.0" text="Title" />
                   <TableColumn fx:id="apptTypeCol" prefWidth="100.0" text="Type" />
                   <TableColumn fx:id="apptDescriptionCol" prefWidth="184.0" text="Description" />
-                  <TableColumn fx:id="apptStartCol" prefWidth="84.0" text="Start Time" />
-                  <TableColumn fx:id="apptEndCol" prefWidth="105.0" text="End Time" />
-                  <TableColumn fx:id="dateCol" prefWidth="100.0" text="Date" />
-                  <TableColumn fx:id="customerIDCol" prefWidth="75.0" text="Customer ID" />
+                  <TableColumn fx:id="apptStartDateCol" prefWidth="84.0" text="Start Date" />
+                  <TableColumn fx:id="apptStartCol" prefWidth="105.0" text="Start Time" />
+                  <TableColumn fx:id="apptEndDateCol" prefWidth="88.0" text="End Date" />
+                  <TableColumn fx:id="apptEndCol" prefWidth="109.0" text="End Time" />
+                  <TableColumn fx:id="customerIDCol" prefWidth="94.0" text="Customer ID" />
               </columns>
             </TableView>
             <ComboBox fx:id="contactNameCombo" layoutX="199.0" layoutY="14.0" onAction="#contactNameComboChange" prefWidth="150.0" />
          </children>
       </AnchorPane>
       <Button fx:id="returnToMain" layoutX="367.0" layoutY="561.0" mnemonicParsing="false" onAction="#returnToMainClick" prefHeight="35.0" prefWidth="170.0" text="Return to Main" />
-      <AnchorPane fx:id="customerPane" layoutX="14.0" layoutY="86.0" prefHeight="462.0" prefWidth="889.0" visible="false">
+      <AnchorPane fx:id="customerPane" layoutX="14.0" layoutY="86.0" prefHeight="462.0" prefWidth="1004.0">
          <children>
             <ComboBox fx:id="customerCombo" layoutX="429.0" layoutY="14.0" onAction="#customerComboChange" prefWidth="150.0" />
-            <TableView fx:id="customerTable" layoutX="14.0" layoutY="46.0" prefHeight="412.0" prefWidth="873.0">
+            <TableView fx:id="customerTable" layoutX="14.0" layoutY="46.0" prefHeight="412.0" prefWidth="980.0">
               <columns>
                   <TableColumn fx:id="apptIDColCustomer" prefWidth="100.0" text="Appointment ID" />
                   <TableColumn fx:id="apptTitleColCustomer" prefWidth="115.0" text="Title" />
                   <TableColumn fx:id="apptTypeColCustomer" prefWidth="100.0" text="Type" />
                   <TableColumn fx:id="apptDescriptionColCustomer" prefWidth="184.0" text="Description" />
-                  <TableColumn fx:id="apptStartColCustomer" prefWidth="77.0" text="Start Time" />
-                  <TableColumn fx:id="apptEndColCustomer" prefWidth="105.0" text="End Time" />
-                  <TableColumn fx:id="dateColCustomer" prefWidth="100.0" text="Date" />
+                  <TableColumn fx:id="apptStartDateColCustomer" prefWidth="77.0" text="Start Date" />
+                  <TableColumn fx:id="apptStartColCustomer" prefWidth="105.0" text="Start Time" />
+                  <TableColumn fx:id="apptEndDateColCustomer" prefWidth="100.0" text="End Date" />
+                  <TableColumn fx:id="apptEndColCustomer" prefWidth="90.0" text="End Time" />
                   <TableColumn fx:id="contactIDColCustomer" prefWidth="90.0" text="Contact ID" />
               </columns>
             </TableView>

@@ -53,7 +53,8 @@ public class homeController implements Initializable {
     public TableColumn apptStartCol;
     public TableColumn apptEndCol;
     public TableColumn apptCustomerIDCol;
-    public TableColumn apptDateCol;
+    public TableColumn apptStartDateCol;
+    public TableColumn apptEndDateCol;
 
     public Button addAppointmentButton;
     public Button updateAppointmentButton;
@@ -155,7 +156,8 @@ public class homeController implements Initializable {
                 //Convert the time to local time of the user.
                 ZonedDateTime apptEnd = timeZone.convertToLocal(endTime);
 
-                String apptDate = apptStart.toLocalDate().toString();
+                String apptStartDate = apptStart.toLocalDate().toString();
+                String apptEndDate = apptEnd.toLocalDate().toString();
                 String apptStartTime = apptStart.toLocalTime().toString();
                 String apptEndTime = apptEnd.toLocalTime().toString();
 
@@ -171,7 +173,7 @@ public class homeController implements Initializable {
 
                 //Create a new appointment then add it to the list to display.
                 Appointment temp = new Appointment(apptID, apptTitle, apptDescription, apptLocation, apptType, apptStart,
-                        apptEnd, apptCreator, apptUpdater, apptCustomerID, apptUserID, apptContactID, apptContact, apptDate, apptStartTime, apptEndTime);
+                        apptEnd, apptCreator, apptUpdater, apptCustomerID, apptUserID, apptContactID, apptContact, apptStartDate, apptEndDate, apptStartTime, apptEndTime);
                 allAppointments.add(temp);
 
                 //Find the start time of the next meeting.
@@ -184,20 +186,17 @@ public class homeController implements Initializable {
                     minStart = apptStart;
                     nextAppt = temp;
                 }
-                /*
-                if (minStart == null && startTime.isAfter(LocalDateTime.now())) {
-                    minStart = startTime;
-                    nextAppt = temp;
-                } else if (minStart != null && startTime.isBefore(minStart) && startTime.isAfter(LocalDateTime.now())) {
-                    minStart = startTime;
-                    nextAppt = temp;
-                }
-*/
+
             }
+
 
             //Checks the login flag and displays an upcoming appointment notification .
             if (!loginFlag.loginCheck) {
-                displayMessages.apptUpcoming(nextAppt.getId(), minStart);
+                if (minStart != null) {
+                    displayMessages.apptUpcoming(nextAppt.getId(), minStart); //Calls the method to display the meeting info.
+                } else
+                    //Calls the method with arbitrary values. This is done to deal with the scenario where no meetings occur in the future in the DB.
+                    displayMessages.apptUpcoming(99, ZonedDateTime.now().minus(60,ChronoUnit.MINUTES));
                 loginFlag.loginCheck = true;
             }
 
@@ -230,8 +229,8 @@ public class homeController implements Initializable {
         apptStartCol.setCellValueFactory(new PropertyValueFactory<>("sTime"));
         apptEndCol.setCellValueFactory(new PropertyValueFactory<>("eTime"));
         apptCustomerIDCol.setCellValueFactory(new PropertyValueFactory<>("customerID"));
-        apptDateCol.setCellValueFactory(new PropertyValueFactory<>("date"));
-
+        apptStartDateCol.setCellValueFactory(new PropertyValueFactory<>("startDate"));
+        apptEndDateCol.setCellValueFactory(new PropertyValueFactory<>("endDate"));
     }
 
 

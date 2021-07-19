@@ -17,6 +17,7 @@ import java.sql.SQLException;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.ResourceBundle;
+import java.util.TimeZone;
 
 
 /**
@@ -45,6 +46,7 @@ public class modAppointment implements Initializable {
     public ComboBox contactCombo;
     public ComboBox startTimeCombo;
     public ComboBox endTimeCombo;
+    public ComboBox userCombo;
 
 
     /**
@@ -64,9 +66,10 @@ public class modAppointment implements Initializable {
      */
     public void receiveAppt(Appointment modAppt)  {
 
-        //Set up an observable list to display the customer names and Contact names
+        //Set up an observable list to display the customer names, user names, and Contact names
         ObservableList<String> customerList = FXCollections.observableArrayList();
         ObservableList<String> contactList = FXCollections.observableArrayList();
+        ObservableList<String> userList = FXCollections.observableArrayList();
 
         //Sets up an observable list to display the available times in the combo boxes.
         ObservableList<String> timeList = FXCollections.observableArrayList();
@@ -182,6 +185,32 @@ public class modAppointment implements Initializable {
             //Set the combobox to display the contact list and set the value to the one passed in.
             contactCombo.setItems(contactList);
             contactCombo.setValue(displayName);
+
+
+            //Set up a query to pull user name as passed in from the ID
+            tempID = modAppt.getUserID();
+            displayName = "";
+
+            sql = "SELECT * FROM users";
+            DBQuery.setPreparedStatement(DBConnect.getConnection(), sql); //Creating the prepared statement object
+            PreparedStatement ps2 = DBQuery.getPreparedStatement(); //referencing the prepared statement
+            ps2.execute(); //Runs the sql query
+            ResultSet allUsers = ps2.getResultSet(); //Setting the results of the query to a result set
+
+            //Iterate through the result set and add the items to the observable list
+            while (allUsers.next()) {
+                String temp = allUsers.getString("User_Name");
+                userList.add(temp);
+                if (tempID == allUsers.getInt("User_ID")) {
+                    displayName = temp;
+                }
+            }
+
+            //Set the combobox to display the contact list and set the value to the one passed in.
+            userCombo.setItems(userList);
+            userCombo.setValue(displayName);
+
+
         } catch (SQLException e){
             //Displays an error if a SQL exception is caught.
             displayMessages.errorMsg("SQL Exception error encountered! " + e.getMessage());
@@ -294,6 +323,34 @@ public class modAppointment implements Initializable {
             entryError = true;
 
         }
+
+
+
+        //Business hours converted to local time.
+        ZonedDateTime startTimeLocal = timeZone.startBusinessHours(ZoneId.of(timeZone.timeZoneName()));
+        ZonedDateTime endTimeLocal = timeZone.endBusinessHours(ZoneId.of(timeZone.timeZoneName()));
+
+        //Checks to ensure the start time is not outside business hours.
+        if (ldtStart.isBefore(startTimeLocal.toLocalDateTime()) || ldtStart.isAfter(endTimeLocal.toLocalDateTime())) {
+            if (entryError) {
+                badEntryMsg = badEntryMsg + "\n";
+            }
+            badEntryMsg = badEntryMsg + "The start time must occur during defined business hours.";
+            entryError = true;
+        }
+
+        //Checks to ensure the start time is not outside business hours.
+        if (ldtEnd.isBefore(startTimeLocal.toLocalDateTime()) || ldtEnd.isAfter(endTimeLocal.toLocalDateTime())) {
+            if (entryError) {
+                badEntryMsg = badEntryMsg + "\n";
+            }
+            badEntryMsg = badEntryMsg + "The end time must occur during defined business hours.";
+            entryError = true;
+        }
+
+
+
+
 
 //Check if the comboboxes for customer, contact and type are empty. If they are, the booleans are true.
         boolean customerEmpty = customerCombo.getSelectionModel().isEmpty();

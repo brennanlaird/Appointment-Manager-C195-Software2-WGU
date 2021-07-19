@@ -57,8 +57,9 @@ public class displayMessages {
         ZonedDateTime rightNow = ZonedDateTime.now();
 //Determine the number of minutes between right now and the next appointment.
         long minutes = ChronoUnit.MINUTES.between(rightNow, apptDateTime);
-//If the next appointment is more than 15 minutes away, display that in an info box.
-        if (minutes > 15) {
+
+//If the next appointment is more than 15 minutes away or past the start time, display that in an info box.
+        if (minutes > 15 || minutes < 0) {
             infoMsg("No appointment within the next 15 minutes.");
 
         } else {

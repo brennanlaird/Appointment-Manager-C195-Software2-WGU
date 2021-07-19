@@ -6,7 +6,8 @@ import java.time.ZonedDateTime;
  * This class sets up appointment objects.
  */
 public class Appointment {
-    private String date;
+    private String startDate;
+    private String endDate;
     private int id;
     private String title;
     private String description;
@@ -23,10 +24,11 @@ public class Appointment {
     private String sTime;
     private String eTime;
 
+
 //Constructor for the appointment class.
     public Appointment(int id, String title, String description, String location, String type,
                        ZonedDateTime startTime, ZonedDateTime endTime, String createdBy, String lastUpdateBy,
-                       int customerID, int userID, int contactID, String contact, String date, String sTime, String eTime) {
+                       int customerID, int userID, int contactID, String contact, String startDate,String endDate, String sTime, String eTime) {
         this.id = id;
         this.title = title;
         this.description = description;
@@ -40,9 +42,11 @@ public class Appointment {
         this.userID = userID;
         this.contactID = contactID;
         this.contact = contact;
-        this.date = date;
+        this.startDate = startDate;
+        this.endDate = endDate;
         this.sTime = sTime;
         this.eTime = eTime;
+
     }
 
     /**
@@ -254,12 +258,20 @@ public class Appointment {
     }
 
 
-    public String getDate() {
-        return date;
+    public String getStartDate() {
+        return startDate;
     }
 
-    public void setDate(String date) {
-        this.date = date;
+    public void setStartDate(String date) {
+        this.startDate = date;
+    }
+
+    public String getEndDate() {
+        return endDate;
+    }
+
+    public void setEndDate(String endDate) {
+        this.endDate = endDate;
     }
 
     public String getSTime() {
@@ -278,4 +290,6 @@ public class Appointment {
     public void setETime(String eTime) {
         this.eTime = eTime;
     }
+
+
 }

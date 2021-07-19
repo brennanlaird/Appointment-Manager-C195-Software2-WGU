@@ -42,20 +42,20 @@ public class addAppointment implements Initializable {
     public ComboBox startTimeCombo;
     public ComboBox endTimeCombo;
     public ComboBox typeComboBox;
-
-
-
+    public ComboBox userCombo;
 
 
     /**
      * Sets up the user interface for the add appointment form.
-     * LAMDA expression is used to find the users current time zone and return it as a string.
+     * Lamda expression is used to find the users current time zone and return it as a string. Implmented alongside a method
+     * that can perform a similar function. Two methods were introduced to show how each could be implemented.
      */
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
-        //Set up an observable list to display the customer names and Contact names
+        //Set up an observable list to display the customer names, Contact names, and user names.
         ObservableList<String> customerList = FXCollections.observableArrayList();
         ObservableList<String> contactList = FXCollections.observableArrayList();
+        ObservableList<String> userList = FXCollections.observableArrayList();
 
         //Sets up an observable list to display the appointment times.
         ObservableList<String> timeList = FXCollections.observableArrayList();
@@ -71,7 +71,7 @@ public class addAppointment implements Initializable {
         //Gets the default time zone to as a ZoneId object. Commented out to implement lamda.
         //ZoneId tzName = ZoneId.of(timeZone.timeZoneName());
 
-        //TODO comment this lamda in javadoc
+
         //Lamda expression to return the users time zone as a string.
         interfaces tz =  () -> {
             TimeZone systemTZ = TimeZone.getDefault();
@@ -79,7 +79,7 @@ public class addAppointment implements Initializable {
 
 
 
-        //Adjusts the defined business hours to local time to restrict the inputs.
+        //Adjusts the defined business hours to local time to restrict the inputs with the help of Lamda expression.
         ZonedDateTime startBusinessLocal = timeZone.startBusinessHours(ZoneId.of(tz.tzName()));
         ZonedDateTime endBusinessLocal = timeZone.endBusinessHours(ZoneId.of(tz.tzName()));
 
@@ -140,7 +140,7 @@ public class addAppointment implements Initializable {
 
 
         } catch (SQLException e) {
-            displayMessages.errorMsg("Error retrieving data from the customer table.");
+            displayMessages.errorMsg("Error retrieving data from the customer table." + e.getMessage());
         }
 
         //Populate the contacts combo box from the DB.
@@ -158,12 +158,34 @@ public class addAppointment implements Initializable {
                 contactList.add(temp);
             }
 
-            //Sets the items to display in the country combo box
+            //Sets the items to display in the contacts combo box
             contactCombo.setItems(contactList);
 
 
         } catch (SQLException e) {
-            displayMessages.errorMsg("Error retrieving data from the contact table.");
+            displayMessages.errorMsg("Error retrieving data from the contact table." + e.getMessage());
+        }
+
+        //Populate the user combobox from the DB
+        try{
+            //Get all the users from the DB and add them to the result set
+            String sql = "SELECT * FROM users";
+            DBQuery.setPreparedStatement(DBConnect.getConnection(), sql); //Creating the prepared statement object
+            PreparedStatement ps = DBQuery.getPreparedStatement(); //referencing the prepared statement
+            ps.execute(); //Runs the sql query
+            ResultSet userRS = ps.getResultSet(); //Setting the results of the query to a result set
+
+            //Iterate through the result set and add the items to the observable list
+            while (userRS.next()) {
+                String temp = userRS.getString("User_Name");
+                userList.add(temp);
+            }
+
+            //Sets the items to display in the contacts combo box and sets the combo to the current username.
+            userCombo.setItems(userList);
+            userCombo.setValue(userInfo.saveUsername);
+        } catch (SQLException e){
+            displayMessages.errorMsg("Error retrieving data from the user table." + e.getMessage());
         }
     }
 
@@ -178,6 +200,7 @@ public class addAppointment implements Initializable {
         String apptDescription = descriptionTextBox.getText();
         String apptLocation = locationTextBox.getText();
         String currentUser = userInfo.saveUsername; //used for created by and last update by
+
 
         //Variables for flagging and entry error and passing message to the error message method.
         boolean entryError = false;
@@ -261,6 +284,7 @@ public class addAppointment implements Initializable {
 
         //Error checking for the time entries.
 
+        //Checks that the end time is after the start time.
         if (ldtEnd.isEqual(ldtStart) || ldtEnd.isBefore(ldtStart)) {
             if (entryError) {
                 badEntryMsg = badEntryMsg + "\n";
@@ -268,13 +292,45 @@ public class addAppointment implements Initializable {
 
             badEntryMsg = badEntryMsg + "The end time must be after the start time.";
             entryError = true;
-
         }
 
-//Check if the comboboxes for customer, contact and type are empty. If they are, the booleans are true.
+
+        //Lamda expression to return the users time zone as a string.
+        interfaces tz =  () -> {
+            TimeZone systemTZ = TimeZone.getDefault();
+            return systemTZ.getID();};
+
+        //Business hours converted to local time.
+        ZonedDateTime startTimeLocal = timeZone.startBusinessHours(ZoneId.of(tz.tzName()));
+        ZonedDateTime endTimeLocal = timeZone.endBusinessHours(ZoneId.of(tz.tzName()));
+
+        //Checks to ensure the start time is not outside business hours.
+        if (ldtStart.isBefore(startTimeLocal.toLocalDateTime()) || ldtStart.isAfter(endTimeLocal.toLocalDateTime())) {
+            if (entryError) {
+                badEntryMsg = badEntryMsg + "\n";
+            }
+            badEntryMsg = badEntryMsg + "The start time must occur during defined business hours.";
+            entryError = true;
+        }
+
+        //Checks to ensure the start time is not outside business hours.
+        if (ldtEnd.isBefore(startTimeLocal.toLocalDateTime()) || ldtEnd.isAfter(endTimeLocal.toLocalDateTime())) {
+            if (entryError) {
+                badEntryMsg = badEntryMsg + "\n";
+            }
+            badEntryMsg = badEntryMsg + "The end time must occur during defined business hours.";
+            entryError = true;
+        }
+
+
+
+
+
+//Check if the comboboxes for customer, contact, user, and type are empty. If they are, the booleans are true.
         boolean customerEmpty = customerCombo.getSelectionModel().isEmpty();
         boolean contactEmpty = contactCombo.getSelectionModel().isEmpty();
         boolean apptTypeEmpty = typeComboBox.getSelectionModel().isEmpty();
+        boolean userEmpty = userCombo.getSelectionModel().isEmpty();
 
         //Create the error message for an empty customer box.
         if (customerEmpty) {
@@ -306,12 +362,24 @@ public class addAppointment implements Initializable {
             entryError = true;
         }
 
+        //Create the error message for an empty user box.
+        if (userEmpty) {
+            if (entryError) {
+                badEntryMsg = badEntryMsg + "\n";
+            }
+
+            badEntryMsg = badEntryMsg + "Select the user from the dropdown box.";
+            entryError = true;
+        }
+
         //Get the customer and contact names and appointment type from the combo boxes.
         String customer = (String) customerCombo.getSelectionModel().getSelectedItem();
 
         String contact = (String) contactCombo.getSelectionModel().getSelectedItem();
 
         String apptType = (String) typeComboBox.getSelectionModel().getSelectedItem();
+
+        String associatedUser = (String) userCombo.getSelectionModel().getSelectedItem();
 
         //If there are no entry error, proceed with pulling data using SQL queries.
         if (!entryError) {
@@ -332,7 +400,7 @@ public class addAppointment implements Initializable {
                 sql = "SELECT User_ID FROM users WHERE User_Name = ?";
                 DBQuery.setPreparedStatement(DBConnect.getConnection(), sql); //Creating the prepared statement object
                 PreparedStatement ps1 = DBQuery.getPreparedStatement(); //referencing the prepared statement
-                ps1.setString(1, currentUser);
+                ps1.setString(1, associatedUser);
                 ps1.executeQuery(); //Runs the sql query
                 ResultSet userID_RS = ps1.getResultSet();
 

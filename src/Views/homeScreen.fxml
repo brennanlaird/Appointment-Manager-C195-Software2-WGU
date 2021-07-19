@@ -4,7 +4,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<AnchorPane prefHeight="699.0" prefWidth="995.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.homeController">
+<AnchorPane prefHeight="727.0" prefWidth="1091.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.homeController">
    <children>
       <Button fx:id="addCustomerButton" layoutX="474.0" layoutY="99.0" mnemonicParsing="false" onAction="#addCustomerButtonClick" prefHeight="25.0" prefWidth="115.0" text="Add Customer" />
       <Button fx:id="exitButton" layoutX="876.0" layoutY="652.0" mnemonicParsing="false" onAction="#exitButtonClick" prefHeight="33.0" prefWidth="93.0" text="Exit" />
@@ -18,23 +18,24 @@
       </TableView>
       <Button fx:id="updateCustomerButton" layoutX="474.0" layoutY="153.0" mnemonicParsing="false" onAction="#updateCustomerButtonClick" prefHeight="25.0" prefWidth="115.0" text="Update Customer" />
       <Button fx:id="deleteCustomerButton" layoutX="474.0" layoutY="202.0" mnemonicParsing="false" onAction="#deleteCustomerButtonClick" prefHeight="25.0" prefWidth="115.0" text="Delete Customer" />
-      <TableView fx:id="apptTable" layoutX="39.0" layoutY="350.0" prefHeight="280.0" prefWidth="945.0">
+      <TableView fx:id="apptTable" layoutX="39.0" layoutY="350.0" prefHeight="280.0" prefWidth="1047.0">
         <columns>
           <TableColumn fx:id="apptIDCol" prefWidth="104.0" text="Appointment ID" />
           <TableColumn fx:id="apptTitleCol" prefWidth="102.0" text="Title" />
             <TableColumn fx:id="apptDescriptionCol" minWidth="6.0" prefWidth="105.0" text="Description" />
             <TableColumn fx:id="apptLocationCol" minWidth="0.0" prefWidth="92.0" text="Location" />
             <TableColumn fx:id="apptContactCol" prefWidth="96.0" text="Contact" />
-            <TableColumn fx:id="apptTypeCol" prefWidth="94.0" text="Type" />
-            <TableColumn fx:id="apptStartCol" prefWidth="93.0" text="Start Time" />
-            <TableColumn fx:id="apptEndCol" minWidth="7.0" prefWidth="94.0" text="End Time" />
-            <TableColumn fx:id="apptDateCol" text="Date" />
-            <TableColumn fx:id="apptCustomerIDCol" prefWidth="82.0" text="Customer ID" />
+            <TableColumn fx:id="apptTypeCol" prefWidth="111.0" text="Type" />
+            <TableColumn fx:id="apptStartDateCol" prefWidth="99.0" text="Start Date" />
+            <TableColumn fx:id="apptStartCol" minWidth="7.0" prefWidth="71.0" text="Start Time" />
+            <TableColumn fx:id="apptEndDateCol" text="End Date" />
+            <TableColumn fx:id="apptEndCol" prefWidth="82.0" text="End Time" />
+            <TableColumn fx:id="apptCustomerIDCol" prefWidth="98.0" text="Customer ID" />
         </columns>
       </TableView>
-      <Button fx:id="addAppointmentButton" layoutX="717.0" layoutY="99.0" mnemonicParsing="false" onAction="#addAppointmentButtonClick" text="Add Appointment" />
-      <Button fx:id="updateAppointmentButton" layoutX="717.0" layoutY="153.0" mnemonicParsing="false" onAction="#updateAppointmentButtonClick" text="Update Appointment" />
-      <Button fx:id="deleteAppointment" layoutX="717.0" layoutY="202.0" mnemonicParsing="false" onAction="#deleteAppointmentClick" text="Delete Appointment" />
+      <Button fx:id="addAppointmentButton" layoutX="738.0" layoutY="204.0" mnemonicParsing="false" onAction="#addAppointmentButtonClick" prefHeight="25.0" prefWidth="129.0" text="Add Appointment" />
+      <Button fx:id="updateAppointmentButton" layoutX="738.0" layoutY="258.0" mnemonicParsing="false" onAction="#updateAppointmentButtonClick" text="Update Appointment" />
+      <Button fx:id="deleteAppointment" layoutX="738.0" layoutY="307.0" mnemonicParsing="false" onAction="#deleteAppointmentClick" prefHeight="25.0" prefWidth="129.0" text="Delete Appointment" />
       <HBox layoutX="287.0" layoutY="317.0" prefHeight="33.0" prefWidth="430.0">
          <children>
             <RadioButton fx:id="viewAllRadio" mnemonicParsing="false" onAction="#viewAllRadioClick" selected="true" text="Show All">
@@ -53,6 +54,6 @@
             <RadioButton fx:id="viewMonthRadio" mnemonicParsing="false" onAction="#viewMonthRadioClick" text="Show Upcoming Month" toggleGroup="$apptFilter" />
          </children>
       </HBox>
-      <Button fx:id="reportsButton" layoutX="897.0" layoutY="124.0" mnemonicParsing="false" onAction="#reportsButtonClick" prefHeight="59.0" prefWidth="78.0" text="Reports" />
+      <Button fx:id="reportsButton" layoutX="740.0" layoutY="69.0" mnemonicParsing="false" onAction="#reportsButtonClick" prefHeight="59.0" prefWidth="115.0" text="Reports" />
    </children>
 </AnchorPane>
