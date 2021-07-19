@@ -90,8 +90,8 @@ public class modAppointment implements Initializable {
         ZoneId tzName = ZoneId.of(timeZone.timeZoneName());
 
         //Adjusts the defined business hours to local time to restrict the inputs.
-        ZonedDateTime startBusinessLocal = timeZone.startBusinessHours(tzName);
-        ZonedDateTime endBusinessLocal = timeZone.endBusinessHours(tzName);
+        ZonedDateTime startBusinessLocal = timeZone.startBusinessHours(tzName,ZonedDateTime.now());
+        ZonedDateTime endBusinessLocal = timeZone.endBusinessHours(tzName, ZonedDateTime.now());
 
 
         //Date formatter to convert the zoned date times to only the times.
@@ -303,6 +303,21 @@ public class modAppointment implements Initializable {
         ZonedDateTime localStartTime = ZonedDateTime.of(formDate, localTimeStart, tzName);
         ZonedDateTime localEndTime = ZonedDateTime.of(formDate, localTimeEnd, tzName);
 
+        //Creates a time that is used to determine the crossover of days in the London time zone.
+        ZonedDateTime crossOverTime = localStartTime.with(LocalTime.of(23, 00));
+
+        //If the time zone is London an adjustment may need to be made.
+        if (timeZone.timeZoneName().equals("Europe/London")) {
+
+            //If the unaltered time appears as before the start time and the altered time is after the crossover time
+            //An adjustment is made to the next day.
+            if (localEndTime.isBefore(localStartTime) && localEndTime.plusDays(1).isAfter(crossOverTime))
+
+                localEndTime = localEndTime.plusDays(1);
+
+        }
+
+
         //Convert the local time to UTC time.
         ZonedDateTime utcStart = localStartTime.withZoneSameInstant(ZoneId.of("UTC"));
         ZonedDateTime utcEnd = localEndTime.withZoneSameInstant(ZoneId.of("UTC"));
@@ -310,6 +325,9 @@ public class modAppointment implements Initializable {
         //Convert the zoned date times in UTC back to local times to save to the database.
         LocalDateTime ldtStart = utcStart.toLocalDateTime();
         LocalDateTime ldtEnd = utcEnd.toLocalDateTime();
+
+
+
 
 
         //Error checking for the time entries.
@@ -327,11 +345,26 @@ public class modAppointment implements Initializable {
 
 
         //Business hours converted to local time.
-        ZonedDateTime startTimeLocal = timeZone.startBusinessHours(ZoneId.of(timeZone.timeZoneName()));
-        ZonedDateTime endTimeLocal = timeZone.endBusinessHours(ZoneId.of(timeZone.timeZoneName()));
+        ZonedDateTime startTimeLocal = timeZone.startBusinessHours(ZoneId.of(timeZone.timeZoneName()),localStartTime);
+        ZonedDateTime endTimeLocal = timeZone.endBusinessHours(ZoneId.of(timeZone.timeZoneName()), localEndTime);
+
+
+/*
+        System.out.println("Start Local: " + startTimeLocal.toLocalDateTime() + " End local: " + endTimeLocal.toLocalDateTime());
+        System.out.println("Entered start: " + localStartTime.toLocalDateTime() + " Entered end: " + localEndTime.toLocalDateTime());
+
+
+        ZonedDateTime utcBusinessStart = timeZone.startBusinessHours(ZoneId.of("UTC"),utcStart);
+        ZonedDateTime utcBusinessEnd = timeZone.endBusinessHours(ZoneId.of("UTC"), utcEnd);
+
+        System.out.println("UTC Business Start: " + utcBusinessStart + " UTC Business End: " + utcBusinessEnd);
+        System.out.println("UTC Start: " + utcStart + " UTC End: " + utcEnd);
+*/
+
+
 
         //Checks to ensure the start time is not outside business hours.
-        if (ldtStart.isBefore(startTimeLocal.toLocalDateTime()) || ldtStart.isAfter(endTimeLocal.toLocalDateTime())) {
+        if (localStartTime.toLocalDateTime().isBefore(startTimeLocal.toLocalDateTime()) || localStartTime.toLocalDateTime().isAfter(endTimeLocal.toLocalDateTime())) {
             if (entryError) {
                 badEntryMsg = badEntryMsg + "\n";
             }
@@ -340,7 +373,7 @@ public class modAppointment implements Initializable {
         }
 
         //Checks to ensure the start time is not outside business hours.
-        if (ldtEnd.isBefore(startTimeLocal.toLocalDateTime()) || ldtEnd.isAfter(endTimeLocal.toLocalDateTime())) {
+        if (localEndTime.toLocalDateTime().isBefore(startTimeLocal.toLocalDateTime()) || localEndTime.toLocalDateTime().isAfter(endTimeLocal.toLocalDateTime())) {
             if (entryError) {
                 badEntryMsg = badEntryMsg + "\n";
             }

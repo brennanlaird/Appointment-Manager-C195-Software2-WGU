@@ -64,7 +64,6 @@ public class addAppointment implements Initializable {
         tzLabel.setText(timeZone.timeZoneName());
 
 
-
         //Sets the combobox to display the available meeting types.
         typeComboBox.setItems(meetingTypes.getMeetTypesCombo());
 
@@ -73,15 +72,15 @@ public class addAppointment implements Initializable {
 
 
         //Lamda expression to return the users time zone as a string.
-        interfaces tz =  () -> {
+        interfaces tz = () -> {
             TimeZone systemTZ = TimeZone.getDefault();
-            return systemTZ.getID();};
-
+            return systemTZ.getID();
+        };
 
 
         //Adjusts the defined business hours to local time to restrict the inputs with the help of Lamda expression.
-        ZonedDateTime startBusinessLocal = timeZone.startBusinessHours(ZoneId.of(tz.tzName()));
-        ZonedDateTime endBusinessLocal = timeZone.endBusinessHours(ZoneId.of(tz.tzName()));
+        ZonedDateTime startBusinessLocal = timeZone.startBusinessHours(ZoneId.of(tz.tzName()), ZonedDateTime.now());
+        ZonedDateTime endBusinessLocal = timeZone.endBusinessHours(ZoneId.of(tz.tzName()), ZonedDateTime.now());
 
         //Date formatter to convert the zoned date times to only the times.
         DateTimeFormatter formatToString = DateTimeFormatter.ISO_LOCAL_TIME;
@@ -93,7 +92,6 @@ public class addAppointment implements Initializable {
         //Displays the local business times in the label.
         restrictionLabel.setText("This is from " + startTimeLocal.substring(0, Math.min(startTimeLocal.length(), 5))
                 + " to " + endTimeLocal.substring(0, Math.min(endTimeLocal.length(), 5)) + " local time.");
-
 
 
         //Setting up variables for use in the loop
@@ -167,7 +165,7 @@ public class addAppointment implements Initializable {
         }
 
         //Populate the user combobox from the DB
-        try{
+        try {
             //Get all the users from the DB and add them to the result set
             String sql = "SELECT * FROM users";
             DBQuery.setPreparedStatement(DBConnect.getConnection(), sql); //Creating the prepared statement object
@@ -184,7 +182,7 @@ public class addAppointment implements Initializable {
             //Sets the items to display in the contacts combo box and sets the combo to the current username.
             userCombo.setItems(userList);
             userCombo.setValue(userInfo.saveUsername);
-        } catch (SQLException e){
+        } catch (SQLException e) {
             displayMessages.errorMsg("Error retrieving data from the user table." + e.getMessage());
         }
     }
@@ -273,9 +271,25 @@ public class addAppointment implements Initializable {
         ZonedDateTime localStartTime = ZonedDateTime.of(formDate, localTimeStart, tzName);
         ZonedDateTime localEndTime = ZonedDateTime.of(formDate, localTimeEnd, tzName);
 
+        //Creates a time that is used to determine the crossover of days in the London time zone.
+        ZonedDateTime crossOverTime = localStartTime.with(LocalTime.of(23, 00));
+
+        //If the time zone is London an adjustment may need to be made.
+        if (timeZone.timeZoneName().equals("Europe/London")) {
+
+            //If the unaltered time appears as before the start time and the altered time is after the crossover time
+            //An adjustment is made to the next day.
+            if (localEndTime.isBefore(localStartTime) && localEndTime.plusDays(1).isAfter(crossOverTime))
+
+                localEndTime = localEndTime.plusDays(1);
+
+        }
+
+
         //Convert the local time to UTC time.
         ZonedDateTime utcStart = localStartTime.withZoneSameInstant(ZoneId.of("UTC"));
         ZonedDateTime utcEnd = localEndTime.withZoneSameInstant(ZoneId.of("UTC"));
+
 
         //Convert the zoned date times in UTC back to local times to save to the database.
         LocalDateTime ldtStart = utcStart.toLocalDateTime();
@@ -296,16 +310,18 @@ public class addAppointment implements Initializable {
 
 
         //Lamda expression to return the users time zone as a string.
-        interfaces tz =  () -> {
+        interfaces tz = () -> {
             TimeZone systemTZ = TimeZone.getDefault();
-            return systemTZ.getID();};
+            return systemTZ.getID();
+        };
 
         //Business hours converted to local time.
-        ZonedDateTime startTimeLocal = timeZone.startBusinessHours(ZoneId.of(tz.tzName()));
-        ZonedDateTime endTimeLocal = timeZone.endBusinessHours(ZoneId.of(tz.tzName()));
+        ZonedDateTime startTimeLocal = timeZone.startBusinessHours(ZoneId.of(tz.tzName()), localStartTime);
+        ZonedDateTime endTimeLocal = timeZone.endBusinessHours(ZoneId.of(tz.tzName()), localEndTime);
+
 
         //Checks to ensure the start time is not outside business hours.
-        if (ldtStart.isBefore(startTimeLocal.toLocalDateTime()) || ldtStart.isAfter(endTimeLocal.toLocalDateTime())) {
+        if (localStartTime.toLocalDateTime().isBefore(startTimeLocal.toLocalDateTime()) || localStartTime.toLocalDateTime().isAfter(endTimeLocal.toLocalDateTime())) {
             if (entryError) {
                 badEntryMsg = badEntryMsg + "\n";
             }
@@ -314,16 +330,13 @@ public class addAppointment implements Initializable {
         }
 
         //Checks to ensure the start time is not outside business hours.
-        if (ldtEnd.isBefore(startTimeLocal.toLocalDateTime()) || ldtEnd.isAfter(endTimeLocal.toLocalDateTime())) {
+        if (localEndTime.toLocalDateTime().isBefore(startTimeLocal.toLocalDateTime()) || localEndTime.toLocalDateTime().isAfter(endTimeLocal.toLocalDateTime())) {
             if (entryError) {
                 badEntryMsg = badEntryMsg + "\n";
             }
             badEntryMsg = badEntryMsg + "The end time must occur during defined business hours.";
             entryError = true;
         }
-
-
-
 
 
 //Check if the comboboxes for customer, contact, user, and type are empty. If they are, the booleans are true.

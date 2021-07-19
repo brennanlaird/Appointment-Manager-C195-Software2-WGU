@@ -447,7 +447,7 @@ public class homeController implements Initializable {
         //Variable for date one week in the future.
         LocalDate oneWeek = LocalDate.now().plus(7, ChronoUnit.DAYS);
         //LAMDA - This expression simplifies the filtering of the table to only display appointments within one week.
-        FilteredList<Appointment> weeklyAppt = new FilteredList<>(allAppointments, i -> (i.getEndTime().toLocalDate().compareTo(oneWeek)) < 0 && (rightNow.compareTo(i.getEndTime().toLocalDate()) < 0));
+        FilteredList<Appointment> weeklyAppt = new FilteredList<>(allAppointments, i -> (i.getEndTime().toLocalDate().compareTo(oneWeek)) < 0 && (rightNow.compareTo(i.getEndTime().toLocalDate()) <= 0));
 
         //Set the table to display the weekly filtered list.
         apptTable.setItems(weeklyAppt);
@@ -464,7 +464,7 @@ public class homeController implements Initializable {
         //Variable for date one month in the future.
         LocalDate oneMonth = LocalDate.now().plus(31, ChronoUnit.DAYS);
         //LAMDA - This expression simplifies the filtering of the table to only display appointments within one month.
-        FilteredList<Appointment> monthlyAppt = new FilteredList<>(allAppointments, i -> (i.getEndTime().toLocalDate().compareTo(oneMonth)) < 0 && (rightNow.compareTo(i.getEndTime().toLocalDate()) < 0));
+        FilteredList<Appointment> monthlyAppt = new FilteredList<>(allAppointments, i -> (i.getEndTime().toLocalDate().compareTo(oneMonth)) < 0 && (rightNow.compareTo(i.getEndTime().toLocalDate()) <= 0));
         //Set the table to display the monthly filtered list.
         apptTable.setItems(monthlyAppt);
     }

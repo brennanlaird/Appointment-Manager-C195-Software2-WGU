@@ -244,9 +244,19 @@ public class modCustomerController {
         //Retrieve the values of all the text box values
         int customerID = Integer.parseInt(idTextBox.getText());
         String customerName = customerNameBox.getText();
-        String customerAddress = addressTextBox.getText() + "|" + address2TextBox.getText();
         String customerPhone = phoneTextBox.getText();
         String customerPostCode = postCodeTextBox.getText();
+
+
+        //Gets the address entered by the user. If the second box is blank then the delimit character is not included.
+        String customerAddress;
+        if (address2TextBox.getText().equals("")) {
+            customerAddress = addressTextBox.getText();
+        } else {
+            customerAddress = addressTextBox.getText() + "|" + address2TextBox.getText();
+        }
+
+
 
         //Variables for entry validation.
         boolean entryError = false;

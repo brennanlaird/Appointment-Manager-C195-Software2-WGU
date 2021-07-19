@@ -1,8 +1,6 @@
 package utilities;
 
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
+import java.time.*;
 import java.util.TimeZone;
 
 /**
@@ -27,13 +25,19 @@ public class timeZone {
      * @param userZone The default time zone of the user.
      * @return The zoned date time of the start of business in the local time zone.
      */
-    public static ZonedDateTime startBusinessHours(ZoneId userZone) {
+    public static ZonedDateTime startBusinessHours(ZoneId userZone, ZonedDateTime dateToKeep) {
         //Declares the start of business hours in Eastern time
         ZonedDateTime startBusiness = ZonedDateTime.of(2000, 1, 1, 8, 0, 0, 0, ZoneId.of("US/Eastern"));
 
+        startBusiness = startBusiness.with(LocalDate.of(dateToKeep.getYear(),dateToKeep.getMonth(),dateToKeep.getDayOfMonth()));
+
+
+
+        //System.out.println("Date to Keep: " + dateToKeep.with(LocalTime.of(8,0)));
+
         //Updates the start time based on the users time zone
         ZonedDateTime updateStartTime = startBusiness.withZoneSameInstant(userZone);
-
+        //ZonedDateTime updateStartTime = dateToKeep.with(LocalTime.of(8,0));
         //returns the updated time to the calling code.
         return updateStartTime;
 
@@ -45,9 +49,12 @@ public class timeZone {
      * @param userZone The default time zone of the user.
      * @return The zoned date time of the end of business in the local time zone.
      */
-    public static ZonedDateTime endBusinessHours(ZoneId userZone) {
+    public static ZonedDateTime endBusinessHours(ZoneId userZone, ZonedDateTime dateToKeep) {
         //Declares the start of business hours in Eastern time
         ZonedDateTime endBusiness = ZonedDateTime.of(2000, 1, 1, 22, 0, 0, 0, ZoneId.of("US/Eastern"));
+
+
+        endBusiness = endBusiness.with(LocalDate.of(dateToKeep.getYear(),dateToKeep.getMonth(),dateToKeep.getDayOfMonth()));
 
         //Updates the start time based on the users time zone
         ZonedDateTime updateEndTime = endBusiness.withZoneSameInstant(userZone);
