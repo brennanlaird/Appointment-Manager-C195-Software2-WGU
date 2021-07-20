@@ -62,10 +62,10 @@ public class modAppointment implements Initializable {
 
     /**
      * This takes the appointment object and populates the UI with appropriate items from the DB.
+     *
      * @param modAppt The appointment object selected from the main screen.
-
      */
-    public void receiveAppt(Appointment modAppt)  {
+    public void receiveAppt(Appointment modAppt) {
 
         //Set up an observable list to display the customer names, user names, and Contact names
         ObservableList<String> customerList = FXCollections.observableArrayList();
@@ -91,7 +91,7 @@ public class modAppointment implements Initializable {
         ZoneId tzName = ZoneId.of(timeZone.timeZoneName());
 
         //Adjusts the defined business hours to local time to restrict the inputs.
-        ZonedDateTime startBusinessLocal = timeZone.startBusinessHours(tzName,ZonedDateTime.now());
+        ZonedDateTime startBusinessLocal = timeZone.startBusinessHours(tzName, ZonedDateTime.now());
         ZonedDateTime endBusinessLocal = timeZone.endBusinessHours(tzName, ZonedDateTime.now());
 
 
@@ -212,7 +212,7 @@ public class modAppointment implements Initializable {
             userCombo.setValue(displayName);
 
 
-        } catch (SQLException e){
+        } catch (SQLException e) {
             //Displays an error if a SQL exception is caught.
             displayMessages.errorMsg("SQL Exception error encountered! " + e.getMessage());
         }
@@ -222,7 +222,6 @@ public class modAppointment implements Initializable {
 
     /**
      * Performs error checking and then updates the a modified appointment in the database.
-
      */
     public void saveButtonClick(ActionEvent actionEvent) throws IOException {
         int apptID = Integer.parseInt(idTextBox.getText());
@@ -231,7 +230,7 @@ public class modAppointment implements Initializable {
         String apptTitle = titleTextBox.getText();
         String apptDescription = descriptionTextBox.getText();
         String apptLocation = locationTextBox.getText();
-        String currentUser = userInfo.saveUsername; //used for created by and last update by
+        String currentUser = userInfo.saveUsername; //used for created by and last update by fields
 
         //Variables for flagging and entry error and passing message to the error message method.
         boolean entryError = false;
@@ -308,17 +307,14 @@ public class modAppointment implements Initializable {
         ZonedDateTime crossOverTime = localStartTime.with(LocalTime.of(23, 59));
 
 
-
         //Variables to flag if the times for the appointments are on the same date.
         //For London time, if the start tim e is before midnight and the end is midnight or later, the dates need to be adjusted.
-        boolean timesSameDate;
         boolean startAfterMid = false;
         boolean endAfterMid = false;
 
 
         //If the time zone is London an adjustment may need to be made.
         if (timeZone.timeZoneName().equals("Europe/London")) {
-
 
 
             //Boolean variables to detect if the start time is after midnight
@@ -345,8 +341,8 @@ public class modAppointment implements Initializable {
                 endAfterMid = true;
             }
 
-            if(endAfterMid && !startAfterMid) {
-
+            //If the end time is after midnight but the start is before, add one day to the end to account for the midnight date change.
+            if (endAfterMid && !startAfterMid) {
 
                 localEndTime = localEndTime.plusDays(1);
             }
@@ -363,12 +359,9 @@ public class modAppointment implements Initializable {
         LocalDateTime ldtStart = utcStart.toLocalDateTime();
         LocalDateTime ldtEnd = utcEnd.toLocalDateTime();
 
-
-
-
-
         //Error checking for the time entries.
 
+        //If the times are not sequential, create an error.
         if (ldtEnd.isEqual(ldtStart) || ldtEnd.isBefore(ldtStart)) {
             if (entryError) {
                 badEntryMsg = badEntryMsg + "\n";
@@ -380,29 +373,17 @@ public class modAppointment implements Initializable {
         }
 
 
-
         //Business hours converted to local time.
         ZonedDateTime startTimeLocal = null;
-        if (startAfterMid && endAfterMid){
-            startTimeLocal = timeZone.startBusinessHours(ZoneId.of(timeZone.timeZoneName()), localStartTime.minusDays(1));} else {
+
+        //If the start and end are after midnight, then the business hours should be for the the day prior.
+        //This adjusts the business hours to start at 13:00 London time if the appointment starts after midnight.
+        if (startAfterMid && endAfterMid) {
+            startTimeLocal = timeZone.startBusinessHours(ZoneId.of(timeZone.timeZoneName()), localStartTime.minusDays(1));
+        } else {
             startTimeLocal = timeZone.startBusinessHours(ZoneId.of(timeZone.timeZoneName()), localStartTime);
         }
         ZonedDateTime endTimeLocal = timeZone.endBusinessHours(ZoneId.of(timeZone.timeZoneName()), localEndTime);
-
-
-/*
-        System.out.println("Start Local: " + startTimeLocal.toLocalDateTime() + " End local: " + endTimeLocal.toLocalDateTime());
-        System.out.println("Entered start: " + localStartTime.toLocalDateTime() + " Entered end: " + localEndTime.toLocalDateTime());
-
-
-        ZonedDateTime utcBusinessStart = timeZone.startBusinessHours(ZoneId.of("UTC"),utcStart);
-        ZonedDateTime utcBusinessEnd = timeZone.endBusinessHours(ZoneId.of("UTC"), utcEnd);
-
-        System.out.println("UTC Business Start: " + utcBusinessStart + " UTC Business End: " + utcBusinessEnd);
-        System.out.println("UTC Start: " + utcStart + " UTC End: " + utcEnd);
-*/
-
-
 
         //Checks to ensure the start time is not outside business hours.
         if (localStartTime.toLocalDateTime().isBefore(startTimeLocal.toLocalDateTime()) || localStartTime.toLocalDateTime().isAfter(endTimeLocal.toLocalDateTime())) {
@@ -421,9 +402,6 @@ public class modAppointment implements Initializable {
             badEntryMsg = badEntryMsg + "The end time must occur during defined business hours.";
             entryError = true;
         }
-
-
-
 
 
 //Check if the comboboxes for customer, contact and type are empty. If they are, the booleans are true.
@@ -632,7 +610,6 @@ public class modAppointment implements Initializable {
 
     /**
      * Returns to the main form without saving any of the user input.
-
      */
     public void cancelButtonClick(ActionEvent actionEvent) throws IOException {
         returnHome.loadHome(actionEvent);

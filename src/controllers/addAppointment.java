@@ -48,8 +48,9 @@ public class addAppointment implements Initializable {
 
     /**
      * Sets up the user interface for the add appointment form.
-     * Lamda expression is used to find the users current time zone and return it as a string. Implmented alongside a method
-     * that can perform a similar function. Two methods were introduced to show how each could be implemented.
+     * Lamda expression is used to find the users current time zone and return it as a string. Implemented alongside a method
+     * that can perform a similar function. Two methods were introduced to show how each could be implemented. Lamda
+     * could be used to eliminate the need for method calls and provide more transparency to how values are being returned.
      */
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
@@ -191,6 +192,9 @@ public class addAppointment implements Initializable {
 
     /**
      * Performs error checking and then saves the appointment to the database.
+     * Lamda expression is used to find the users current time zone and return it as a string. Implemented alongside a method
+     * that can perform a similar function. Two methods were introduced to show how each could be implemented. Lamda
+     * could be used to eliminate the need for method calls and provide more transparency to how values are being returned.
      */
     public void saveButtonClick(ActionEvent actionEvent) throws IOException {
 
@@ -276,17 +280,14 @@ public class addAppointment implements Initializable {
         ZonedDateTime crossOverTime = localStartTime.with(LocalTime.of(23, 59));
 
 
-
         //Variables to flag if the times for the appointments are on the same date.
         //For London time, if the start tim e is before midnight and the end is midnight or later, the dates need to be adjusted.
-        boolean timesSameDate;
         boolean startAfterMid = false;
         boolean endAfterMid = false;
 
 
         //If the time zone is London an adjustment may need to be made.
         if (timeZone.timeZoneName().equals("Europe/London")) {
-
 
 
             //Boolean variables to detect if the start time is after midnight
@@ -313,17 +314,12 @@ public class addAppointment implements Initializable {
                 endAfterMid = true;
             }
 
-            if(endAfterMid && !startAfterMid) {
-
-
+            //If the end time is after midnight but the start is before, add one day to the end to account for the midnight date change.
+            if (endAfterMid && !startAfterMid) {
                 localEndTime = localEndTime.plusDays(1);
             }
 
-
         }
-
-
-        System.out.println("Start Time: " + localStartTime + " End Time: " + localEndTime);
 
 
         //Convert the local time to UTC time.
@@ -357,10 +353,13 @@ public class addAppointment implements Initializable {
 
         //Business hours converted to local time.
 
+        //If the start and end are after midnight, then the business hours should be for the the day prior.
+        //This adjusts the business hours to start at 13:00 London time if the appointment starts after midnight.
         ZonedDateTime startTimeLocal = null;
-        if (startAfterMid && endAfterMid){
-         startTimeLocal = timeZone.startBusinessHours(ZoneId.of(tz.tzName()), localStartTime.minusDays(1));} else {
-             startTimeLocal = timeZone.startBusinessHours(ZoneId.of(tz.tzName()), localStartTime);
+        if (startAfterMid && endAfterMid) {
+            startTimeLocal = timeZone.startBusinessHours(ZoneId.of(tz.tzName()), localStartTime.minusDays(1));
+        } else {
+            startTimeLocal = timeZone.startBusinessHours(ZoneId.of(tz.tzName()), localStartTime);
         }
 
         ZonedDateTime endTimeLocal = timeZone.endBusinessHours(ZoneId.of(tz.tzName()), localEndTime);

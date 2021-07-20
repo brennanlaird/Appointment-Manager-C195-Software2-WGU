@@ -257,36 +257,66 @@ public class Appointment {
         this.contact = contact;
     }
 
-
+    /**
+     *
+     * @return The start date of the appointment as a string.
+     */
     public String getStartDate() {
         return startDate;
     }
 
+    /**
+     *
+     * @param date Set the start date of the appointment.
+     */
     public void setStartDate(String date) {
         this.startDate = date;
     }
 
+    /**
+     *
+     * @return The end date of the appointment as a string.
+     */
     public String getEndDate() {
         return endDate;
     }
 
+    /**
+     *
+     * @param endDate Set the end date of the appointment.
+     */
     public void setEndDate(String endDate) {
         this.endDate = endDate;
     }
 
+    /**
+     *
+     * @return The start time of the appointment as a string.
+     */
     public String getSTime() {
         return sTime;
     }
 
+    /**
+     *
+     * @param sTime Set the start time of the appointment.
+     */
     public void setSTime(String sTime) {
         this.sTime = sTime;
     }
 
+    /**
+     *
+     * @return The end time of the appointment as a string.
+     */
     public String getETime() {
         return eTime;
     }
 
-
+    /**
+     *
+     * @param eTime Set the end time of the appointment.
+     */
     public void setETime(String eTime) {
         this.eTime = eTime;
     }
