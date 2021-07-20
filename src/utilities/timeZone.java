@@ -23,6 +23,7 @@ public class timeZone {
      * Returns the defined start of business in the default local time zone.
      *
      * @param userZone The default time zone of the user.
+     * @param dateToKeep The date that should be used as the base for the start of business.
      * @return The zoned date time of the start of business in the local time zone.
      */
     public static ZonedDateTime startBusinessHours(ZoneId userZone, ZonedDateTime dateToKeep) {
@@ -30,10 +31,6 @@ public class timeZone {
         ZonedDateTime startBusiness = ZonedDateTime.of(2000, 1, 1, 8, 0, 0, 0, ZoneId.of("US/Eastern"));
 
         startBusiness = startBusiness.with(LocalDate.of(dateToKeep.getYear(),dateToKeep.getMonth(),dateToKeep.getDayOfMonth()));
-
-
-
-        //System.out.println("Date to Keep: " + dateToKeep.with(LocalTime.of(8,0)));
 
         //Updates the start time based on the users time zone
         ZonedDateTime updateStartTime = startBusiness.withZoneSameInstant(userZone);
@@ -47,6 +44,7 @@ public class timeZone {
      * Returns the defined end of business in the default local time zone.
      *
      * @param userZone The default time zone of the user.
+     * @param dateToKeep The date that should be used as the base for the end of business.
      * @return The zoned date time of the end of business in the local time zone.
      */
     public static ZonedDateTime endBusinessHours(ZoneId userZone, ZonedDateTime dateToKeep) {
